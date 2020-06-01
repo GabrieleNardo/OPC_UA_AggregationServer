@@ -1,5 +1,5 @@
 {
-   "server1" : {
+   "sample_server1" : {
         "server_url":"",
         "endpoint":"",
         "security_level":"",
@@ -8,7 +8,7 @@
         "service_req":""
     },
     
-    "server2" : {
+    "sample_server2" : {
         "server_url":"",
         "endpoint":"",
         "security_level":"",
