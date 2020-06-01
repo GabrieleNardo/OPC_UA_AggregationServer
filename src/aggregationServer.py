@@ -7,8 +7,13 @@ Nardo Gabriele Salvatore O55000430
 import opcua
 import json # per caricare le configurazioni dal file json
 
-with open("./config/json.items") as json_file:
-        json_config = json.load(json_file)
+# Import delle informazioni relative ai server da aggregare 
+print("Reading Configuration Information")
+print("-------------------------------")
+config_path = "..\\config\\config.json"
+config_file = open(config_path,"r")
+config_json = json.load(config_file)
+print(config_json)
 
 
 print("Codice in Arrivo...")
