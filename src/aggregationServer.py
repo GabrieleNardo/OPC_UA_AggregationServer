@@ -12,7 +12,17 @@ if __name__ == "__main__":
     #Path settings
     config_path = "..\\config\\config.json"
     certificate_path = "..\\certificates\\"
-    # Server Setup
+
+    # Import delle informazioni relative ai server da aggregare 
+    print("-----------------------------------")
+    print("Reading Configuration Information")
+    print("-----------------------------------")
+    config_file = open(config_path,"r")
+    config_json = json.load(config_file)
+    aggregated_server_1 = config_json['sample_server1']
+    aggragated_server_2 = config_json['sample_server2']
+
+    # Server Setup endpoint and security policy
     server = Server()
     server.set_endpoint("opc.tcp://127.0.0.1:8000/AggregationServer/")
 
@@ -27,22 +37,25 @@ if __name__ == "__main__":
     # Setup our namespace
     uri = "http://Aggregation.Server.opcua"
     idx = server.register_namespace(uri)
-
+  
     # get Objects node, this is where we should put our custom stuff
     objects = server.get_objects_node()
 
+    # populate our namespace with the aggreagated element adn their variables
+    aggregator = objects.add_folder(idx, "Aggregator")
+
+    aggregatedServer_1 = aggregator.add_object(idx,"AggregatedServer_1")
+    aggraegated_var_1 = aggregatedServer_1.add_variable(idx, "AggregatedVariable", 0)
+    aggraegated_var_1.set_writable()
+
+    aggregatedServer_2 = aggregator.add_object(idx,"AggregatedServer_2")
+    aggraegated_var_2 = aggregatedServer_2.add_variable(idx, "AggregatedVariable", 0)
+    aggraegated_var_2.set_writable()
+
     # starting server
     server.start()
+    print("Available Endpoint for connection : opc.tcp://127.0.0.1:8000/AggregationServer/")
     
-    # Import delle informazioni relative ai server da aggregare 
-    print("-----------------------------------")
-    print("Reading Configuration Information")
-    print("-----------------------------------")
-    config_file = open(config_path,"r")
-    config_json = json.load(config_file)
-    aggregated_server_1 = config_json['sample_server1']
-    aggragated_server_2 = config_json['sample_server2']
-
     try:
         while True:
             time.sleep(1)
