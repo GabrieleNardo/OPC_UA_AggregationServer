@@ -10,17 +10,20 @@ import time
 
 if __name__ == "__main__":
     #Path settings
-    config_path = "..\\config\\config.json"
+    config_path = "..\\config\\"
     certificate_path = "..\\certificates\\"
 
-    # Import delle informazioni relative ai server da aggregare 
+    # Import delle informazioni relative ai server da aggregare e alla sicurezza 
     print("-----------------------------------")
-    print("Reading Configuration Information")
+    print("Loading Configuration Information")
     print("-----------------------------------")
-    config_file = open(config_path,"r")
+    config_file = open(config_path + "config.json","r")
     config_json = json.load(config_file)
     aggregated_server_1 = config_json['sample_server1']
     aggragated_server_2 = config_json['sample_server2']
+
+    sec_config_file = open(config_path + "openssl_conf.json","r")
+    sec_config_json = json.load(sec_config_file)
 
     # Server Setup endpoint and security policy
     server = Server()
