@@ -15,5 +15,14 @@
         "node_id":"",
         "variable_type":"",
         "service_req":""
+    },
+
+    "sample_server3" : {
+        "server_url":"",
+        "endpoint":"",
+        "security_level":"",
+        "node_id":"",
+        "variable_type":"",
+        "service_req":""
     }
 }   

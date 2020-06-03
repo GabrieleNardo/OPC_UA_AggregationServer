@@ -4,23 +4,27 @@ Realizzato da :
 Raiti Mario O55000434
 Nardo Gabriele Salvatore O55000430
 """
-from opcua import ua, Server, Client
+from opcua import ua, Client, Server
 import json # per caricare le configurazioni dal file json
 import time 
 
 if __name__ == "__main__":
     #Path settings
-    config_path = "..\\config\\"
-    certificate_path = "..\\certificates\\"
+    config_path = ".\config\\"
+    certificate_path = ".\certificates\\"
 
-    # Import delle informazioni relative ai server da aggregare e alla sicurezza 
+    # import aggregation server configuration info  
     print("-----------------------------------")
     print("Loading Configuration Information")
     print("-----------------------------------")
     config_file = open(config_path + "config.json","r")
     config_json = json.load(config_file)
-    aggregated_server_1 = config_json['sample_server1']
-    aggragated_server_2 = config_json['sample_server2']
+
+    aggr_servers = [] #sample servers informaion list
+    for key in config_json:
+        aggr_servers.append(config_json[key])
+
+    print(aggr_servers)    
 
     sec_config_file = open(config_path + "openssl_conf.json","r")
     sec_config_json = json.load(sec_config_file)
@@ -46,14 +50,20 @@ if __name__ == "__main__":
 
     # populate our namespace with the aggreagated element adn their variables
     aggregator = objects.add_folder(idx, "Aggregator")
+ 
+    # definition of our custom object type AggregatedServer
+    types = server.get_node(ua.ObjectIds.BaseObjectType)
+    mycustomobj_type = types.add_object_type(idx, "AggregatedServerType")
+    var = mycustomobj_type.add_variable(idx, "AggregaterdVariable", 0)
+    var.set_writable()
+    var.set_modelling_rule(True)    
 
-    aggregatedServer_1 = aggregator.add_object(idx,"AggregatedServer_1")
-    aggraegated_var_1 = aggregatedServer_1.add_variable(idx, "AggregatedVariable", 0)
-    aggraegated_var_1.set_writable()
+    aggregatedServers_objects = [] #aggregated servers objects list
+    for i in range(len(aggr_servers)):
+        aggregatedServers_objects.append(aggregator.add_object(idx,"AggregatedServer_"+str(i+1), mycustomobj_type.nodeid))
 
-    aggregatedServer_2 = aggregator.add_object(idx,"AggregatedServer_2")
-    aggraegated_var_2 = aggregatedServer_2.add_variable(idx, "AggregatedVariable", 0)
-    aggraegated_var_2.set_writable()
+    print(aggregatedServers_objects)
+
 
     # starting server
     server.start()
