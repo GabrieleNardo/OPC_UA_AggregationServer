@@ -22,6 +22,48 @@ Per una corretta esecuzione è necessario importare i seguenti moduli :
 L'installazione delle dipendenze deve essere eseguita tramite i seguenti comandi :
 
 ```[shell]
-pip3 install opcua ( per installazione dettagliata e realtive dipendenze ruchieste da opcua seguire il link in alto)
+pip3 install opcua ( per installazione dettagliata e relative dipendenze richieste da opcua seguire il link realtivo allo stack )
+```
+Inoltre è richiesta l'installazione di opnessl per la generazione dei certificati di sicurezza
+
+## File di Configurazione
+Nella directory config sono presenti i file __config.json__ e __openssl_conf.json__ , il primo contiene le informazioni relative ai server ch si vogliono aggregare, e ai rispettivi dati a cui si vuole accedere; nel secondo file invece sono contenute le informazioni necessarie per la generazione dinamica di certificati x509v3.
+
+**openssl_config.json :** in questo file sono presenti due campi da settare opportunamente per la corretta esecuzione del programma. 
+- **ssl_installation_path** in questo campo va inserito il proprio path di installazione di openssl. 
+- **ssl_confing_file_name** va inserito il nome del file di configurazione di openssl. In basso un esempio
+
+```[json]
+{
+    "ssl_installation_path":"C:\Program Files\OpenSSL-Win64\bin\openssl.cfg",
+    "ssl_confing_file_name":"openssl.cfg"
+}
+```
+
+**config.json :** questo file contiene un elemento sample server per ogni server che si vuole aggregare, per ogni elemento sono previsti 6 capi da configurare opportunamente per settare le informazioni relative al servere e ai dati da tracciare. Di seguito vengono descritti tali campi :
+- **server_url**
+- **endpoint**
+- **security_level**
+- **node_id**
+- **variable_type**
+- **service_req**
+- 
+```[json]
+{
+   "sample_server" : {
+        "server_url":"",
+        "endpoint":"",
+        "security_level":"",
+        "node_id":"",
+        "variable_type":"",
+        "service_req":""
+    },
+}
+```
+## Avvio
+Per avviare l'aggregation server bisogna posizionarsi all'interno della directory principale del progetto e lanciare il seguente comando da terminale :
+
+```[shell]
+python .\src\aggregationServer.py
 
 ```

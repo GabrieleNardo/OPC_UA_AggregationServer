@@ -6,7 +6,8 @@ Nardo Gabriele Salvatore O55000430
 """
 from opcua import ua, Client, Server
 import json # per caricare le configurazioni dal file json
-import time 
+import time
+import Client.py 
 
 if __name__ == "__main__":
     #Path settings
@@ -24,7 +25,7 @@ if __name__ == "__main__":
     for key in config_json:
         aggr_servers.append(config_json[key])
 
-    print(aggr_servers)    
+    #print(aggr_servers)    
 
     sec_config_file = open(config_path + "openssl_conf.json","r")
     sec_config_json = json.load(sec_config_file)
@@ -62,18 +63,23 @@ if __name__ == "__main__":
     for i in range(len(aggr_servers)):
         aggregatedServers_objects.append(aggregator.add_object(idx,"AggregatedServer_"+str(i+1), mycustomobj_type.nodeid))
 
-    print(aggregatedServers_objects)
+    #print(aggregatedServers_objects)
 
 
     # starting server
     server.start()
     print("Available Endpoint for connection : opc.tcp://127.0.0.1:8000/AggregationServer/")
+    print("Press Ctrl + C to stop the server...")
     
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
+        print("-----------------------------------")
+        print("Clients Stopping...")
+        print("-----------------------------------")
         print("Server Stopping...")
         print("-----------------------------------")
     finally:
+        #client.disconnect()
         server.stop()
