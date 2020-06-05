@@ -7,7 +7,7 @@ Nardo Gabriele Salvatore O55000430
 from opcua import ua, Client, Server
 import json # per caricare le configurazioni dal file json
 import time
-import Client.py 
+import Client
 
 if __name__ == "__main__":
     #Path settings

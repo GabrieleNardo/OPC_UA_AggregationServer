@@ -18,7 +18,7 @@ class Client_opc():
 
     def client_instantiate(self):
         self.client = Client(self.server_path) #instaniate client
-        if ((self.policy != "none") and (self.mode != "none")):
+        if ((self.policy != "None") and (self.mode != "None")):
             self.client.set_security_string(self.policy+","+self.mode+","+self.cert_path+"client_certificate.der,"+self.cert_path+"client_private_key.pem") #SecurityPolicy, Mode, Certificate path, Private key path
 
     '''def get_endp(self):
@@ -46,8 +46,8 @@ class Client_opc():
         node.set_value(new_value)
         return
 
-    def subscribe(self):
-
+    def subscribe(self,node_id,pub_int):
+        # inserire implementazione della subscription
         return
 
 """ Test Client

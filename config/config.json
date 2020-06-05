@@ -5,7 +5,8 @@
         "security_mode":"none",
         "node_id":"ns=2;i=10852",
         "variable_type":"DataValue",
-        "service_req":"polling"
+        "service_req":"polling",
+        "publish_interval": ""
     },
     
     "sample_server2" : {
@@ -14,7 +15,8 @@
         "security_mode":"",
         "node_id":"",
         "variable_type":"",
-        "service_req":""
+        "service_req":"",
+        "publish_interval": ""
     },
 
     "sample_server3" : {
@@ -23,6 +25,7 @@
         "security_mode":"",
         "node_id":"",
         "variable_type":"",
-        "service_req":""
+        "service_req":"",
+        "publish_interval": ""
     }
 }   
