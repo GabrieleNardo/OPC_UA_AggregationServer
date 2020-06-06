@@ -47,7 +47,8 @@ Nella directory config sono presenti i file __config.json__ e __openssl_conf.jso
 -  **security_mode** : deve contenere una stringa contente la modalità di sicurezza richiesta , i valori ammissibili sono None , Sign e SignAndEncrypt, 
 -  **node_id** : deve contenere il node id della variabile di cui si vogliono ottenere i valori soto forma di stringa formattata nel seguente modo ns=valore;i=valore,
 -  **variable_type** : deve contenere il tipo della variabile da leggere,
--  **service_req** : definisce il tipo di servizio per otternere i dati , i valori ammissibili  sono due , _polling_ per abilitare un accesso ai dati utilizzando i servizi read/write e _subscribe_ per abilitare l'accesso ai dati in modalità pub/sub
+-  **service_req** : definisce il tipo di servizio per otternere i dati , i valori ammissibili  sono tre  _read_ , _write_ , _subscribe_ ,
+-  **new_value** : da settare solo se si sceglie come valore di service_req _write_ , inserire il nuovo valore che si vuole scrivere
 - **publish_interval** : da settare solo se si sceglie come valore di service_req _subscribe_ , inserire un intero senza segno , tener conto che è il valore inidicherà millisecondi.
 
 ```[json]
@@ -58,7 +59,8 @@ Nella directory config sono presenti i file __config.json__ e __openssl_conf.jso
         "security_mode":"None",
         "node_id":"ns=2;i=10852",
         "variable_type":"DataValue",
-        "service_req":"polling",
+        "service_req":"read",
+        "new_value" "",
         "publish_interval": ""
     },
 }

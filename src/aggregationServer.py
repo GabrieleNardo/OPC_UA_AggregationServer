@@ -7,7 +7,7 @@ Nardo Gabriele Salvatore O55000430
 from opcua import ua, Client, Server
 import json # per caricare le configurazioni dal file json
 import time
-import Client
+from Thread_client import ThreadClient
 
 if __name__ == "__main__":
     #Path settings
@@ -71,15 +71,25 @@ if __name__ == "__main__":
     print("Available Endpoint for connection : opc.tcp://127.0.0.1:8000/AggregationServer/")
     print("Press Ctrl + C to stop the server...")
     
+    
+    # Creazione dei threads per lgi n client
+    clients_threads = []
+    for conf in aggr_servers:
+        clients_threads.append(ThreadClient(conf,certificate_path))
+
+    for i in range(len(clients_threads)):
+        print("-----------------------------------")
+        print(f"Thread {i} started..")
+        clients_threads[i].start()
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("-----------------------------------")
-        print("Clients Stopping...")
+        for i in range(len(clients_threads)):
+            clients_threads[i].stop()
+
         print("-----------------------------------")
         print("Server Stopping...")
         print("-----------------------------------")
     finally:
-        #client.disconnect()
         server.stop()

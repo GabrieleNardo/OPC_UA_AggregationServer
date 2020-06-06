@@ -28,25 +28,28 @@ class Client_opc():
         return self.endp'''
 
     def secure_channel_and_session_connection(self):
-        client.secure_channel_timeout = 10000
-        client.session_timeout = 10000
+        self.client.secure_channel_timeout = 10000
+        self.client.session_timeout = 10000
         try:
             self.client.connect() #create secure channel and session; activate session
             print("Client instantiated; secure channel and session created; session activated ")
         except: 
             self.client.disconnect()
+            
+    def disconnect(self):
+        self.client.disconnect()
 
     def readData(self,node_id):
-        node = client.get_node(node_id)
+        node = self.client.get_node(node_id)
         var = node.get_data_value()
         return var
     
     def writeData(self,node_id,new_value):
-        node = client.get_node(node_id)
+        node = self.client.get_node(node_id)
         node.set_value(new_value)
         return
 
-    def subscribe(self,node_id,pub_int):
+    def subscribe(self,node_id,pub_interval):
         # inserire implementazione della subscription
         return
 
