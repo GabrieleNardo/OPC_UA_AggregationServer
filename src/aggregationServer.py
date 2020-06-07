@@ -39,8 +39,8 @@ if __name__ == "__main__":
                             ua.SecurityPolicyType.Basic256Sha256_Sign])
 
     # load server certificate and private key. This enables endpoints
-    server.load_certificate(certificate_path + "server_certificate.der")
-    server.load_private_key(certificate_path + "server_private_key.pem")
+    #server.load_certificate(certificate_path + "server_certificate.der")
+    #server.load_private_key(certificate_path + "server_private_key.pem")
     
     # Setup our namespace
     uri = "http://Aggregation.Server.opcua"
@@ -55,13 +55,16 @@ if __name__ == "__main__":
     # definition of our custom object type AggregatedServer
     types = server.get_node(ua.ObjectIds.BaseObjectType)
     mycustomobj_type = types.add_object_type(idx, "AggregatedServerType")
-    var = mycustomobj_type.add_variable(idx, "AggregaterdVariable", 0)
+    var = mycustomobj_type.add_variable(idx, "AggregaterdVariable1", 0)
     var.set_writable()
     var.set_modelling_rule(True)    
 
     aggregatedServers_objects = [] #aggregated servers objects list
     for i in range(len(aggr_servers)):
-        aggregatedServers_objects.append(aggregator.add_object(idx,"AggregatedServer_"+str(i+1), mycustomobj_type.nodeid))
+        obj = aggregator.add_object(idx,"AggregatedServer_"+str(i+1), mycustomobj_type.nodeid)
+        for j in range(len(aggr_servers[i]['node_id'].split(",")) -1):
+            obj.add_variable(idx,"AggregatedVariable"+str(j+2), 0).set_writable()
+        aggregatedServers_objects.append(obj)
 
     #print(aggregatedServers_objects)
 
@@ -74,8 +77,8 @@ if __name__ == "__main__":
     
     # Creazione dei threads per gli n client
     clients_threads = []
-    for conf in aggr_servers:
-        clients_threads.append(ThreadClient(conf,certificate_path))
+    for i in  range(len(aggr_servers)):
+        clients_threads.append(ThreadClient(aggr_servers[i],certificate_path, aggregatedServers_objects[i]))
 
     for i in range(len(clients_threads)):
         print("-----------------------------------")
@@ -87,9 +90,10 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         for i in range(len(clients_threads)):
             clients_threads[i].stop()
+            clients_threads[i].join()
 
+    finally:
         print("-----------------------------------")
         print("Server Stopping...")
         print("-----------------------------------")
-    finally:
         server.stop()

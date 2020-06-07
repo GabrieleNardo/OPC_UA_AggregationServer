@@ -10,19 +10,26 @@ import time
 
 class SubHandler(object):
 
+    def __init__(self, AggrObject):
+        self.AggrObject = AggrObject
+
     def datachange_notification(self, node, val, data):
-        print("Python: New data change event", node, val)
+        print("Python: New data change event", node, data.monitored_item.Value.ServerTimestamp, val)
+        AggrVar = self.AggrObject.get_variables()
+        for i in range(len(AggrVar)):
+           AggrVar[i].set_value(data.monitored_item.Value)
 
     def event_notification(self, event):
         print("Python: New event", event)
 
 class Client_opc():
 
-    def __init__(self, cert_path, server_path, policy, mode):
+    def __init__(self, cert_path, server_path, policy, mode, AggrObject):
         self.cert_path = cert_path #certificates path
         self.server_path = server_path
         self.policy = policy
         self.mode = mode
+        self.AggrObject = AggrObject
 
     def client_instantiate(self):
         self.client = Client(self.server_path) #instaniate client
@@ -47,25 +54,51 @@ class Client_opc():
     def disconnect(self):
         self.client.disconnect()
 
-    def readData(self,node_id):
-        node = self.client.get_node(node_id)
-        var = node.get_data_value()
-        return var
+    def readData(self,node_ids):
+        node = []
+        values = []
+        #Get nodes
+        for node_id in node_ids.split(","):
+            node.append(self.client.get_node(node_id))
+        #Get values
+        for i in range(len(node)):
+            values.append(node[i].get_data_value())
+        #Set readed values in the local variables
+        AggrVar = self.AggrObject.get_variables()
+        for i in range(len(AggrVar)):
+           AggrVar[i].set_value(values[i])
+
     
-    def writeData(self,node_id,new_value):
-        node = self.client.get_node(node_id)
-        node.set_value(new_value)
+    def writeData(self,node_ids,new_values):
+        node = []
+        new_vals = []
+        #Get nodes
+        for node_id in node_ids.split(","):
+            node.append(self.client.get_node(node_id))
+        #Get values
+        for val in new_values.split(","):
+            new_vals.append(val)
+        #Set new values in local variables
+        AggrVar = self.AggrObject.get_variables()
+        for i in range(len(AggrVar)):
+           AggrVar[i].set_value(new_vals[i])
+        #Set new values in the sample server
+        for i in range(len(node)):
+           node[i].set_value(new_vals[i]) 
 
     def subscribe(self,node_ids,pub_interval):
-        handler = SubHandler()
-        node = []
-        var = []        
+        #Create the handler
+        handler = SubHandler(self.AggrObject)
+        node = [] 
+        #Creating the subscription
         sub = self.client.create_subscription(pub_interval, handler)
-        for node_id in node_ids:
+        #node is the nodelist that we want to get the updated values
+        for node_id in node_ids.split(","):
             node.append(self.client.get_node(node_id))
-        for i in range(len(node)):
-            var.append(node[i].get_data_value())
-        handle = sub.subscribe_data_change(var) #handle = list of monitored items ids
+        #subscribe_data_change creates monitored items
+        handle = sub.subscribe_data_change(node) #handle = list of monitored items ids
+        
+        #handler.datachange_notification is called when a value of the monitored nodes has changed
         return sub, handle
     
     def unsubscribe(self, sub, handle):

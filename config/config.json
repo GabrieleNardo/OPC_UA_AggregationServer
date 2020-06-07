@@ -1,12 +1,12 @@
 {
    "sample_server1" : {
-        "endpoint":"opc.tcp://pc-mario:51210/UA/SampleServer",
+        "endpoint":"opc.tcp://desktop-v6n8m9j:51210/UA/SampleServer",
         "security_policy":"None",
         "security_mode":"None",
-        "node_id":"ns=2;i=10852",
+        "node_id":"ns=2;i=10852,ns=2;i=10855",
         "variable_type":"DataValue",
-        "service_req":"polling",
-        "new_value":"",
-        "publish_interval": ""
+        "service_req":"write",
+        "new_value":"2,5",
+        "publish_interval": 2000
     }
 }   
