@@ -11,8 +11,8 @@ from Thread_client import ThreadClient
 
 if __name__ == "__main__":
     #Path settings
-    config_path = ".\config\\"
-    certificate_path = ".\certificates\\"
+    config_path = ".\\config\\"
+    certificate_path = ".\\certificates\\"
 
     # import aggregation server configuration info  
     print("-----------------------------------")
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     print("Press Ctrl + C to stop the server...")
     
     
-    # Creazione dei threads per lgi n client
+    # Creazione dei threads per gli n client
     clients_threads = []
     for conf in aggr_servers:
         clients_threads.append(ThreadClient(conf,certificate_path))
