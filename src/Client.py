@@ -86,17 +86,21 @@ class Client_opc():
         for i in range(len(node)):
            node[i].set_value(new_vals[i]) 
 
-    def subscribe(self,node_ids,pub_interval):
+    def subscribe(self,node_ids, sub_info):
         #Create the handler
         handler = SubHandler(self.AggrObject)
         node = [] 
         #Creating the subscription
-        sub = self.client.create_subscription(pub_interval, handler)
+        sub = self.client.create_subscription(sub_info['publish_interval'], handler)
         #node is the nodelist that we want to get the updated values
         for node_id in node_ids.split(","):
             node.append(self.client.get_node(node_id))
         #subscribe_data_change creates monitored items
-        handle = sub.subscribe_data_change(node) #handle = list of monitored items ids
+        print(sub_info['deadbandval'])
+        print(sub_info['deadbandtype'])
+        print(sub_info['queue_size'])
+        handle = sub.deadband_monitor(node, sub_info['deadbandval'], sub_info['deadbandtype'], sub_info['queue_size']) #handle = list of monitored items ids
+        print(handle)
         
         #handler.datachange_notification is called when a value of the monitored nodes has changed
         return sub, handle
