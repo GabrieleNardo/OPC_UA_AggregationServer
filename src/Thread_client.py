@@ -15,16 +15,16 @@ class ThreadClient(threading.Thread):
     """
     def __init__(self , sample_server_conf , cert_path, AggrObject):
         threading.Thread.__init__(self)
-        self._stropper = threading.Event() 
+        self._stopper- = threading.Event() 
         self.sample_server_conf = sample_server_conf
         self.cert_path = cert_path
         self.AggrObject = AggrObject
      
     def stop(self): 
-        self._stropper.set() 
+        self._stopper.set() 
   
     def stopped(self): 
-        return self._stropper.isSet() 
+        return self._stopper.isSet() 
     
     def run(self):
             client = Client.Client_opc(self.cert_path , self.sample_server_conf['endpoint'], self.sample_server_conf['security_policy'] , self.sample_server_conf['security_mode'], self.AggrObject)

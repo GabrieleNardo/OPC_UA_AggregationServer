@@ -4,7 +4,7 @@ Realizzato da :
 Raiti Mario O55000434
 Nardo Gabriele Salvatore O55000430
 """
-from opcua import ua, Client, Server
+from opcua import ua, Server
 import json # per caricare le configurazioni dal file json
 import time
 from Thread_client import ThreadClient

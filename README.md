@@ -46,24 +46,39 @@ In basso un esempio:
 - **endpoint**: deve contenere l'url del server che si vuole aggregare;
 -  **security_policy**: deve contenere una stringa che rappresenti l'algoritmo utilizzato per le operazioni di sicurezza ove previste, in accordo al campo security mode;
 -  **security_mode** : deve contenere una stringa contente la modalità di sicurezza richiesta; i valori ammissibili sono: None, Sign e SignAndEncrypt; 
--  **node_id**: deve contenere il node id della variabile di cui si vogliono ottenere i valori sotto forma di stringa formattata nel seguente modo: ‘ns=valore;i=valore’;
+-  **node_id**: deve contenere il node id della variabile di cui si vogliono ottenere i valori sotto forma di stringa formattata nel seguente modo: ‘ns=valore;i=valore’ nel caso si richiedano servizi di _read_ o _write_ è possibile passare una lista di node id separati da una virgola;
 -  **variable_type**: deve contenere il tipo della variabile da leggere;
--  **service_req**: definisce il tipo di servizio per otternere i dati; i valori ammissibili sono tre: _read_, _write_, _subscribe_;
--  **new_value**: definisce il nuovo valore che si vuole scrivere (da settare solamente se si sceglie service_req: _write_);
-- **publish_interval**: definisce il publish interval in millisecondi come intero senza segno (da settare solamente se si sceglie service_req: _subscribe_).
+-  **service_req**: definisce il tipo di servizio per otternere i dati, i valori ammissibili sono tre: _read_, _write_, _subscribe_;
+
+Se viene richiesto come servizio la _write_ bisogna settare il campo **new_value** presente in **write_info** che sarà il nuovo valore che verrà attribuito al nodo del sample server e della copia locale nel aggregation server.
+
+Se viene richiesto come servizio la _subscribe_ bisognare settare i sottocampi di **sub_info** che corrispondo alle caratteristiche della subscription e dei relativi monitored item ad essa associati.
+- **publish_interval** : definisce il publish interval della subscription in millisecondi;
+- **queue_size** : intero che indica la dimensione della coda dei monitored items;
+- **deadbandval** : valore da inserie in accordo al tipo di deadband voluta, se si sceglie la deadband percentuale bisogna inserire un numero compreso tra 0 e 100, se si sceglie invece la deadband assoluta bisogna mettere il valore che andrà a costituire la soglia;
+- **deadbandtype** : permette di settare il tipo di deadband che verrà presa in considerazione dal datachange filter, come valore ammisibile ha **1** se vogliamo una deadband assoluta e **2** se vogliamo una deadband percentuale. Scegliere una deadband percentuale solo se si vuole monitorare un node analog
+
+A segurie un esempio di configurazione : 
 
 ```[json]
 {
-   "sample_server1": {
-        "endpoint":"opc.tcp://pc-mario:51210/UA/SampleServer",
+   "sample_server1" : {
+        "endpoint":"opc.tcp://desktop-v6n8m9j:51210/UA/SampleServer",
         "security_policy":"None",
         "security_mode":"None",
-        "node_id":"ns=2;i=10852",
+        "node_id":"ns=2;i=11212",
         "variable_type":"DataValue",
-        "service_req":"read",
-        "new_value" "",
-        "publish_interval": ""
-    },
+        "service_req":"subscribe",
+        "write_info":{      
+            "new_value":""
+        },
+        "sub_info": {
+            "publish_interval": 500,
+            "queue_size": 1,
+            "deadbandval": 40,
+            "deadbandtype": 1
+        }
+    }
 }
 ```
 ## Avvio
