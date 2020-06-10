@@ -4,7 +4,7 @@ Realizzato da :
 Raiti Mario O55000434
 Nardo Gabriele Salvatore O55000430
 """
-from opcua import ua, Server
+from opcua import ua, Client, Server
 import json # per caricare le configurazioni dal file json
 import time
 from Thread_client import ThreadClient
@@ -25,10 +25,11 @@ if __name__ == "__main__":
     for key in config_json:
         aggr_servers.append(config_json[key])
 
-    #print(aggr_servers)    
-
-    sec_config_file = open(config_path + "openssl_conf.json","r")
-    sec_config_json = json.load(sec_config_file)
+    #list of node ids to monitor
+    node_ids = [[] for i in range(len(aggr_servers))]
+    for i, server in enumerate(aggr_servers):
+        for node_id in server['node_ids'].split(","):
+            node_ids[i].append(node_id)
 
     # Server Setup endpoint and security policy
     server = Server()
@@ -39,8 +40,8 @@ if __name__ == "__main__":
                             ua.SecurityPolicyType.Basic256Sha256_Sign])
 
     # load server certificate and private key. This enables endpoints
-    #server.load_certificate(certificate_path + "server_certificate.der")
-    #server.load_private_key(certificate_path + "server_private_key.pem")
+    server.load_certificate(certificate_path + "server_certificate.der")
+    server.load_private_key(certificate_path + "server_private_key.pem")
     
     # Setup our namespace
     uri = "http://Aggregation.Server.opcua"
@@ -54,19 +55,18 @@ if __name__ == "__main__":
  
     # definition of our custom object type AggregatedServer
     types = server.get_node(ua.ObjectIds.BaseObjectType)
-    mycustomobj_type = types.add_object_type(idx, "AggregatedServerType")
-    var = mycustomobj_type.add_variable(idx, "AggregaterdVariable1", 0)
-    var.set_writable()
-    var.set_modelling_rule(True)    
+    mycustomobj_type = types.add_object_type(idx, "AggregatedServerType") 
+    mycustomobj_type.set_modelling_rule(True)    
 
     aggregatedServers_objects = [] #aggregated servers objects list
     for i in range(len(aggr_servers)):
         obj = aggregator.add_object(idx,"AggregatedServer_"+str(i+1), mycustomobj_type.nodeid)
-        for j in range(len(aggr_servers[i]['node_id'].split(",")) -1):
-            obj.add_variable(idx,"AggregatedVariable"+str(j+2), 0).set_writable()
+        for j in range(len(aggr_servers[i]['node_ids'].split(","))):
+            var = obj.add_variable(idx,"AggregatedVariable_"+str(j+1), 0)
+            prop = var.add_property(idx, "IdVarInSampleServer", node_ids[i][j])
+            var.set_writable()
+            
         aggregatedServers_objects.append(obj)
-
-    #print(aggregatedServers_objects)
 
 
     # starting server
@@ -97,3 +97,8 @@ if __name__ == "__main__":
         print("Server Stopping...")
         print("-----------------------------------")
         server.stop()
+
+
+
+    #ns=2;i=11212,ns=2;i=11206,ns=2;i=11224 UINT 64, INT 64, DOUBLE (Analog)
+    #ns=2;i=11200,ns=2;i=11194  UINT 32, INT 32 (Analog)

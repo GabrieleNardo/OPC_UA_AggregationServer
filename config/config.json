@@ -1,19 +1,55 @@
 {
    "sample_server1" : {
-        "endpoint":"opc.tcp://desktop-v6n8m9j:51210/UA/SampleServer",
+        "endpoint":"opc.tcp://DESKTOP-V6N8M9J:51210/UA/SampleServer",
         "security_policy":"None",
         "security_mode":"None",
-        "node_id":"ns=2;i=11212",
+        "node_ids":"ns=2;i=11212,ns=2;i=11206,ns=2;i=11224",
         "variable_type":"DataValue",
         "service_req":"subscribe",
         "write_info":{      
             "new_value":"2,5"
         },
-        "sub_info": {
-            "publish_interval": 500,
-            "queue_size": 1,
-            "deadbandval": 40,
-            "deadbandtype": 1
-        }
+        "sub_infos": {
+            "sub_info1":{
+                "publish_interval": 2000,
+                "queue_size": 1,
+                "deadbandval": 40,
+                "deadbandtype": 2
+            },
+            "sub_info2":{
+                "publish_interval": 3000,
+                "queue_size": 1,
+                "deadbandval": 60,
+                "deadbandtype": 1
+            }
+        },
+        "sub_info_ids":"2,1,2"
+    },
+
+    "sample_server2" : {
+        "endpoint":"opc.tcp://DESKTOP-V6N8M9J:51210/UA/SampleServer",
+        "security_policy":"None",
+        "security_mode":"None",
+        "node_ids":"ns=2;i=11200,ns=2;i=11194",
+        "variable_type":"DataValue",
+        "service_req":"subscribe",
+        "write_info":{      
+            "new_value":"2,5"
+        },
+        "sub_infos": {
+            "sub_info1":{
+                "publish_interval": 4000,
+                "queue_size": 1,
+                "deadbandval": 90,
+                "deadbandtype": 1
+            },
+            "sub_info2":{
+                "publish_interval": 1000,
+                "queue_size": 1,
+                "deadbandval": 20,
+                "deadbandtype": 2
+            }
+        },
+        "sub_info_ids":"1,2"
     }
 }   

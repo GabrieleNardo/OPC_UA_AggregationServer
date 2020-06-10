@@ -14,10 +14,14 @@ class SubHandler(object):
         self.AggrObject = AggrObject
 
     def datachange_notification(self, node, val, data):
-        print("Python: New data change event", node, data.monitored_item.Value.ServerTimestamp, val)
+        print("Python: New data change event", node, val)
+        #Getting node_id string to compare with properties of aggregated variables
+        node_str = "ns="+str(node.nodeid.NamespaceIndex)+";i="+str(node.nodeid.Identifier)
         AggrVar = self.AggrObject.get_variables()
         for i in range(len(AggrVar)):
-           AggrVar[i].set_value(data.monitored_item.Value)
+            value = AggrVar[i].get_properties()
+            if(value[0].get_data_value().Value.Value == node_str):
+                AggrVar[i].set_value(data.monitored_item.Value)
 
     def event_notification(self, event):
         print("Python: New event", event)
@@ -86,43 +90,45 @@ class Client_opc():
         for i in range(len(node)):
            node[i].set_value(new_vals[i]) 
 
-    def subscribe(self,node_ids, sub_info):
-        #Create the handler
-        handler = SubHandler(self.AggrObject)
-        node = [] 
-        #Creating the subscription
-        sub = self.client.create_subscription(sub_info['publish_interval'], handler)
-        #node is the nodelist that we want to get the updated values
-        for node_id in node_ids.split(","):
-            node.append(self.client.get_node(node_id))
-        #subscribe_data_change creates monitored items
-        print(sub_info['deadbandval'])
-        print(sub_info['deadbandtype'])
-        print(sub_info['queue_size'])
-        handle = sub.deadband_monitor(node, sub_info['deadbandval'], sub_info['deadbandtype'], sub_info['queue_size']) #handle = list of monitored items ids
-        print(handle)
-        
+    def subscribe(self,node_ids, sub_infos, sub_info_ids):
+        #Create the handlers
+        try:
+            handler = []
+            for i in range(len(sub_infos)):
+                handler.append(SubHandler(self.AggrObject))
+            node = [] 
+            sub = []
+            #Creating the subscription
+            for i in range(len(sub_infos)):
+                sub.append(self.client.create_subscription(sub_infos['sub_info'+str(i+1)]['publish_interval'], handler[i]))
+            #node is the nodelist that we want to get the updated values
+            for node_id in node_ids.split(","):
+                node.append(self.client.get_node(node_id))
+            #deadband_monitor creates monitored items
+            handle = []
+            sub_info_ids = sub_info_ids.split(",")
+            for i in range(len(sub_infos)):         #iterate on sub_infos
+                sub_node = []                       #sub_node will contain the nodes that we want to subscribe with the same sub parameters                      
+                for j in range(len(node)):          #iterate on the number on nodes             
+                    if(int(sub_info_ids[j]) == (i+1)):   #if ids are the same, append that node for that subscription
+                        sub_node.append(node[j])
+                handle.append(sub[i].deadband_monitor(sub_node, sub_infos['sub_info'+str(i+1)]['deadbandval'], sub_infos['sub_info'+str(i+1)]['deadbandtype'], sub_infos['sub_info'+str(i+1)]['queue_size'])) #handle = list of monitored items ids
+        except Exception:
+            print("An Error was occured in client.subscribe function!")
         #handler.datachange_notification is called when a value of the monitored nodes has changed
         return sub, handle
     
     def unsubscribe(self, sub, handle):
-        for mid in handle:
-            sub.unsubscribe(mid) #unsubscribe to data_change/events of the selected monitored items (handle -> list of monitored items ids)
+        try:
+            for i in range(len(handle)):
+                for mid in handle[i]:
+                    sub[i].unsubscribe(mid) #unsubscribe to data_change/events of the selected monitored items (handle -> list of monitored items ids)
+        except Exception:
+            print("An Error was occured in client.unsubscribe function!")
 
     def delete_sub(self, sub):
-        sub.delete()
-
-
-""" Test Client
-if __name__ == "__main__":
-    client = Client("opc.tcp://pc-mario:51210/UA/SampleServer")
-    #client.set_security_string("Basic128Rsa15,SignAndEncrypt,.\\certificates\\client_certificate.der,.\\certificates\\client_private_key.pem")
-    try:
-        client.connect()
-        while True:
-          
-    except KeyboardInterrupt:
-        print("Client Stopping...")
-    finally:
-        client.disconnect()
-"""
+        try:
+            for i in range(len(sub)):
+                sub[i].delete()
+        except Exception:
+            print("An Error was occured in client.delete function!")

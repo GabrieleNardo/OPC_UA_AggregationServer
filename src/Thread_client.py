@@ -15,16 +15,16 @@ class ThreadClient(threading.Thread):
     """
     def __init__(self , sample_server_conf , cert_path, AggrObject):
         threading.Thread.__init__(self)
-        self._stopper- = threading.Event() 
+        self._stropper = threading.Event() 
         self.sample_server_conf = sample_server_conf
         self.cert_path = cert_path
         self.AggrObject = AggrObject
      
     def stop(self): 
-        self._stopper.set() 
+        self._stropper.set() 
   
     def stopped(self): 
-        return self._stopper.isSet() 
+        return self._stropper.isSet() 
     
     def run(self):
             client = Client.Client_opc(self.cert_path , self.sample_server_conf['endpoint'], self.sample_server_conf['security_policy'] , self.sample_server_conf['security_mode'], self.AggrObject)
@@ -32,14 +32,14 @@ class ThreadClient(threading.Thread):
             client.secure_channel_and_session_connection()
 
             if (self.sample_server_conf['service_req'] == "read"):
-                client.readData(self.sample_server_conf['node_id'])
+                client.readData(self.sample_server_conf['node_ids'])
                 
 
             if (self.sample_server_conf['service_req'] == "subscribe"):
-                sub, handle = client.subscribe(self.sample_server_conf['node_id'],self.sample_server_conf['sub_info'])
+                sub, handle = client.subscribe(self.sample_server_conf['node_ids'],self.sample_server_conf['sub_infos'], self.sample_server_conf['sub_info_ids'])
 
             if (self.sample_server_conf['service_req'] == "write"):
-                client.writeData(self.sample_server_conf['node_id'],self.sample_server_conf['write_info']['new_value'])
+                client.writeData(self.sample_server_conf['node_ids'],self.sample_server_conf['write_info']['new_value'])
                 
                 
             while True: 
