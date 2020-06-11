@@ -4,20 +4,29 @@
         "security_policy":"None",
         "security_mode":"None",
         "node_ids":"ns=2;i=11212,ns=2;i=11206,ns=2;i=11224",
-        "variable_type":"DataValue",
         "service_req":"subscribe",
         "write_info":{      
             "new_value":"2,5"
         },
         "sub_infos": {
             "sub_info1":{
-                "publish_interval": 2000,
+                "requested_publish_interval": 2000,
+                "requested_lifetime_count": 30000,
+                "requested_max_keepalive_timer": 5000,
+                "max_notif_per_publish": 2147483647,
+                "publishing_enabled": false,
+                "priority": 0,
                 "queue_size": 1,
                 "deadbandval": 40,
                 "deadbandtype": 2
             },
             "sub_info2":{
-                "publish_interval": 3000,
+                "requested_publish_interval": 3000,
+                "requested_lifetime_count": 30000,
+                "requested_max_keepalive_timer": 5000,
+                "max_notif_per_publish": 2147483647,
+                "publishing_enabled": false,
+                "priority": 0,
                 "queue_size": 1,
                 "deadbandval": 60,
                 "deadbandtype": 1
@@ -31,20 +40,29 @@
         "security_policy":"None",
         "security_mode":"None",
         "node_ids":"ns=2;i=11200,ns=2;i=11194",
-        "variable_type":"DataValue",
         "service_req":"subscribe",
         "write_info":{      
             "new_value":"2,5"
         },
         "sub_infos": {
             "sub_info1":{
-                "publish_interval": 4000,
+                "requested_publish_interval": 4000,
+                "requested_lifetime_count": 30000,
+                "requested_max_keepalive_timer": 5000,
+                "max_notif_per_publish": 2147483647,
+                "publishing_enabled": true,
+                "priority": 0,
                 "queue_size": 1,
                 "deadbandval": 90,
                 "deadbandtype": 1
             },
             "sub_info2":{
-                "publish_interval": 1000,
+                "requested_publish_interval": 1000,
+                "requested_lifetime_count": 30000,
+                "requested_max_keepalive_timer": 5000,
+                "max_notif_per_publish": 2147483647,
+                "publishing_enabled": true,
+                "priority": 0,
                 "queue_size": 1,
                 "deadbandval": 20,
                 "deadbandtype": 2

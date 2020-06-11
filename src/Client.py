@@ -92,7 +92,7 @@ class Client_opc():
 
     def subscribe(self,node_ids, sub_infos, sub_info_ids):
         #Create the handlers
-        try:
+        #try:
             handler = []
             for i in range(len(sub_infos)):
                 handler.append(SubHandler(self.AggrObject))
@@ -100,7 +100,14 @@ class Client_opc():
             sub = []
             #Creating the subscription
             for i in range(len(sub_infos)):
-                sub.append(self.client.create_subscription(sub_infos['sub_info'+str(i+1)]['publish_interval'], handler[i]))
+                params = ua.CreateSubscriptionParameters()
+                params.RequestedPublishingInterval = sub_infos['sub_info'+str(i+1)]['requested_publish_interval']
+                params.RequestedLifetimeCount = sub_infos['sub_info'+str(i+1)]['requested_lifetime_count']
+                params.RequestedMaxKeepAliveCount = sub_infos['sub_info'+str(i+1)]['requested_max_keepalive_timer']
+                params.MaxNotificationsPerPublish = sub_infos['sub_info'+str(i+1)]['max_notif_per_publish']
+                params.PublishingEnabled = sub_infos['sub_info'+str(i+1)]['publishing_enabled']
+                params.Priority = sub_infos['sub_info'+str(i+1)]['priority']
+                sub.append(self.client.create_subscription(params, handler[i]))
             #node is the nodelist that we want to get the updated values
             for node_id in node_ids.split(","):
                 node.append(self.client.get_node(node_id))
@@ -113,10 +120,9 @@ class Client_opc():
                     if(int(sub_info_ids[j]) == (i+1)):   #if ids are the same, append that node for that subscription
                         sub_node.append(node[j])
                 handle.append(sub[i].deadband_monitor(sub_node, sub_infos['sub_info'+str(i+1)]['deadbandval'], sub_infos['sub_info'+str(i+1)]['deadbandtype'], sub_infos['sub_info'+str(i+1)]['queue_size'])) #handle = list of monitored items ids
-        except Exception:
-            print("An Error was occured in client.subscribe function!")
+        #except Exception:
         #handler.datachange_notification is called when a value of the monitored nodes has changed
-        return sub, handle
+            return sub, handle
     
     def unsubscribe(self, sub, handle):
         try:
