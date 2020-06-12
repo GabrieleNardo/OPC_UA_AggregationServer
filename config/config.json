@@ -14,25 +14,37 @@
                 "requested_lifetime_count": 30000,
                 "requested_max_keepalive_timer": 5000,
                 "max_notif_per_publish": 2147483647,
-                "publishing_enabled": false,
-                "priority": 0,
-                "queue_size": 1,
-                "deadbandval": 40,
-                "deadbandtype": 2
+                "publishing_enabled": true,
+                "priority": 0
             },
             "sub_info2":{
                 "requested_publish_interval": 3000,
                 "requested_lifetime_count": 30000,
                 "requested_max_keepalive_timer": 5000,
                 "max_notif_per_publish": 2147483647,
-                "publishing_enabled": false,
+                "publishing_enabled": true,
+                "priority": 0
+            }
+        },
+        "sub_info_ids":"2,1,2",
+        "monitored_item_infos":{
+            "monitored_item_infos1":{
+                "sampling_interval": 2000,
+                "queue_size": 1,
+                "discard_oldest": true,
+                "deadbandval": 40,
+                "deadbandtype": 2
+            },
+            "monitored_item_infos2":{
+                "sampling_interval": 3000,
                 "priority": 0,
                 "queue_size": 1,
+                "discard_oldest": true,
                 "deadbandval": 60,
                 "deadbandtype": 1
             }
         },
-        "sub_info_ids":"2,1,2"
+        "monitored_item_info_ids": "1,1,2"
     },
 
     "sample_server2" : {
@@ -51,10 +63,7 @@
                 "requested_max_keepalive_timer": 5000,
                 "max_notif_per_publish": 2147483647,
                 "publishing_enabled": true,
-                "priority": 0,
-                "queue_size": 1,
-                "deadbandval": 90,
-                "deadbandtype": 1
+                "priority": 0
             },
             "sub_info2":{
                 "requested_publish_interval": 1000,
@@ -62,12 +71,27 @@
                 "requested_max_keepalive_timer": 5000,
                 "max_notif_per_publish": 2147483647,
                 "publishing_enabled": true,
+                "priority": 0
+            }
+        },
+        "sub_info_ids":"1,2",
+        "monitored_item_infos":{
+            "monitored_item_infos1":{
+                "sampling_interval": 4000,
+                "queue_size": 1,
+                "discard_oldest": true,
+                "deadbandval": 90,
+                "deadbandtype": 1
+            },
+            "monitored_item_infos2":{
+                "sampling_interval": 1000,
                 "priority": 0,
                 "queue_size": 1,
+                "discard_oldest": true,
                 "deadbandval": 20,
                 "deadbandtype": 2
             }
         },
-        "sub_info_ids":"1,2"
+        "monitored_item_info_ids": "2,1"
     }
 }   

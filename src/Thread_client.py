@@ -36,7 +36,7 @@ class ThreadClient(threading.Thread):
                 
 
             if (self.sample_server_conf['service_req'] == "subscribe"):
-                sub, handle = client.subscribe(self.sample_server_conf['node_ids'],self.sample_server_conf['sub_infos'], self.sample_server_conf['sub_info_ids'])
+                sub, handle = client.subscribe(self.sample_server_conf['node_ids'],self.sample_server_conf['sub_infos'], self.sample_server_conf['sub_info_ids'], self.sample_server_conf['monitored_item_infos'], self.sample_server_conf['monitored_item_info_ids'])
 
             if (self.sample_server_conf['service_req'] == "write"):
                 client.writeData(self.sample_server_conf['node_ids'],self.sample_server_conf['write_info']['new_value'])

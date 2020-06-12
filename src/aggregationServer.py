@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
     # Server Setup endpoint and security policy
     server = Server()
+    server.name = "AggregationServer"
     server.set_endpoint("opc.tcp://127.0.0.1:8000/AggregationServer/")
 
     server.set_security_policy([ua.SecurityPolicyType.NoSecurity,
