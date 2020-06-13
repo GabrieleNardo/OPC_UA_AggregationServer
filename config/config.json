@@ -1,8 +1,8 @@
 {
    "sample_server1" : {
-        "endpoint":"opc.tcp://DESKTOP-V6N8M9J:51210/UA/SampleServer",
-        "security_policy":"None",
-        "security_mode":"None",
+        "endpoint":"opc.tcp://PC-Mario:51210/UA/SampleServer",
+        "security_policy":"Basic256",
+        "security_mode":"Sign",
         "node_ids":"ns=2;i=11212,ns=2;i=11206,ns=2;i=11224",
         "service_req":"subscribe",
         "write_info":{      
@@ -48,7 +48,7 @@
     },
 
     "sample_server2" : {
-        "endpoint":"opc.tcp://DESKTOP-V6N8M9J:51210/UA/SampleServer",
+        "endpoint":"opc.tcp://PC-Mario:51210/UA/SampleServer",
         "security_policy":"None",
         "security_mode":"None",
         "node_ids":"ns=2;i=11200,ns=2;i=11194",
