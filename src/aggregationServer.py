@@ -1,6 +1,6 @@
 """
-File Principale Contenente L'implementazione dell Aggregation Server 
-Realizzato da :
+Main file that contain the implementation of the Aggregation Server 
+Created by:
 Raiti Mario O55000434
 Nardo Gabriele Salvatore O55000430
 """
@@ -11,27 +11,23 @@ from Thread_client import ThreadClient
 
 if __name__ == "__main__":
     #Path settings
+    #Path Config json file
     config_path = ".\\config\\"
+    #Path to certificates files
     certificate_path = ".\\certificates\\"
 
-    # import aggregation server configuration info  
+    # import aggregation server configuration infos file  
     print("-----------------------------------")
     print("Loading Configuration Information")
     print("-----------------------------------")
     config_file = open(config_path + "config.json","r")
     config_json = json.load(config_file)
 
-    aggr_servers = [] #sample servers informaion list
+    aggr_servers = [] #each element will contain sample servers informaion list
     for key in config_json:
         aggr_servers.append(config_json[key])
 
-    #list of node ids to monitor
-    node_ids = [[] for i in range(len(aggr_servers))]
-    for i, server in enumerate(aggr_servers):
-        for node_id in server['node_ids'].split(","):
-            node_ids[i].append(node_id)
-
-    # Server Setup endpoint and security policy
+    # Server Setup endpoint and security policy settings
     server = Server()
     server.name = "AggregationServer"
     server.set_endpoint("opc.tcp://127.0.0.1:8000/AggregationServer/")
@@ -46,19 +42,30 @@ if __name__ == "__main__":
     
     # Setup our namespace
     uri = "http://Aggregation.Server.opcua"
+    #Getting the index of our nasmespace
     idx = server.register_namespace(uri)
   
-    # get Objects node, this is where we should put our custom stuff
+    # get Objects node. This is where we should put our custom stuff
     objects = server.get_objects_node()
 
-    # populate our namespace with the aggreagated element adn their variables
+    # populate our namespace with the aggreagated element and their variables
     aggregator = objects.add_folder(idx, "Aggregator")
  
-    # definition of our custom object type AggregatedServer
+    # definition of our custom object type -> AggregatedServer
     types = server.get_node(ua.ObjectIds.BaseObjectType)
     mycustomobj_type = types.add_object_type(idx, "AggregatedServerType") 
     mycustomobj_type.set_modelling_rule(True)    
 
+    # each element of the node_ids list contains the node ids of the nodes that we want to monitor on a single sample server
+    #This list is useful when populating object tree
+    node_ids = [[] for i in range(len(aggr_servers))]
+    for i, Server in enumerate(aggr_servers):
+        for node_id in Server['node_ids'].split(","):
+            node_ids[i].append(node_id)
+
+    #Populating the object tree with our custom object type and variables that will contain the values that we want to monitor. 
+    #Added also a property for each variable, that will contain the node id of the node in the sample server that we want to obtain values ->
+    # -> relationship between our Aggregated server and sample servers
     aggregatedServers_objects = [] #aggregated servers objects list
     for i in range(len(aggr_servers)):
         obj = aggregator.add_object(idx,"AggregatedServer_"+str(i+1), mycustomobj_type.nodeid)
@@ -79,6 +86,7 @@ if __name__ == "__main__":
     # Creazione dei threads per gli n client
     clients_threads = []
     for i in  range(len(aggr_servers)):
+        #We pass to the ThreadClient the conf of a sample server, cert path and AggregatedServer object that cointains the variable to monitor in that sample server
         clients_threads.append(ThreadClient(aggr_servers[i],certificate_path, aggregatedServers_objects[i]))
 
     for i in range(len(clients_threads)):
@@ -88,7 +96,8 @@ if __name__ == "__main__":
     try:
         while True:
             time.sleep(1)
-    except KeyboardInterrupt:
+    except KeyboardInterrupt: #Ctrl + C
+        #Stopping the client threads and joining them before stopping the Aggregation server
         for i in range(len(clients_threads)):
             clients_threads[i].stop()
             clients_threads[i].join()
