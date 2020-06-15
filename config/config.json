@@ -1,15 +1,10 @@
 {
-   "sample_server1" : {
-        "endpoint":"opc.tcp://desktop-v6n8m9j:51210/UA/SampleServer",
+   "servers" : [{
+        "endpoint":"opc.tcp://pc-mario:51210/UA/SampleServer",
         "security_policy":"Basic128Rsa15",
         "security_mode":"SignAndEncrypt",
-        "node_ids":"ns=2;i=11212,ns=2;i=11206,ns=2;i=11224",
-        "service_req":"subscribe",
-        "write_info":{      
-            "new_value":"2,5"
-        },
-        "sub_infos": {
-            "sub_info1":{
+        "sub_infos": [
+            {
                 "requested_publish_interval": 2000,
                 "requested_lifetime_count": 30000,
                 "requested_max_keepalive_timer": 5000,
@@ -17,7 +12,7 @@
                 "publishing_enabled": true,
                 "priority": 0
             },
-            "sub_info2":{
+            {
                 "requested_publish_interval": 3000,
                 "requested_lifetime_count": 30000,
                 "requested_max_keepalive_timer": 5000,
@@ -25,73 +20,25 @@
                 "publishing_enabled": true,
                 "priority": 0
             }
-        },
-        "sub_info_ids":"2,1,2",
-        "monitored_item_infos":{
-            "monitored_item_infos1":{
+        ],
+        "monitoring_info":[
+            {
+                "subIndex": 0,
+                "nodeTomonitor": "ns=2;i=11212",
+                "monitoringMode": "monitored_item", 
                 "sampling_interval": 2000,
                 "queue_size": 1,
                 "discard_oldest": true,
                 "deadbandval": 40,
                 "deadbandtype": 2
             },
-            "monitored_item_infos2":{
-                "sampling_interval": 3000,
-                "priority": 0,
-                "queue_size": 1,
-                "discard_oldest": true,
-                "deadbandval": 60,
-                "deadbandtype": 1
+            {
+                "subIndex": 1,
+                "nodeTomonitor": "ns=2;i=11206",
+                "monitoringMode": "polling", 
+                "sampling_interval": 2000
             }
-        },
-        "monitored_item_info_ids": "1,1,2"
-    },
-
-    "sample_server2" : {
-        "endpoint":"opc.tcp://desktop-v6n8m9j:51210/UA/SampleServer",
-        "security_policy":"None",
-        "security_mode":"None",
-        "node_ids":"ns=2;i=11200,ns=2;i=11194",
-        "service_req":"subscribe",
-        "write_info":{      
-            "new_value":"2,5"
-        },
-        "sub_infos": {
-            "sub_info1":{
-                "requested_publish_interval": 4000,
-                "requested_lifetime_count": 30000,
-                "requested_max_keepalive_timer": 5000,
-                "max_notif_per_publish": 2147483647,
-                "publishing_enabled": true,
-                "priority": 0
-            },
-            "sub_info2":{
-                "requested_publish_interval": 1000,
-                "requested_lifetime_count": 30000,
-                "requested_max_keepalive_timer": 5000,
-                "max_notif_per_publish": 2147483647,
-                "publishing_enabled": true,
-                "priority": 0
-            }
-        },
-        "sub_info_ids":"1,2",
-        "monitored_item_infos":{
-            "monitored_item_infos1":{
-                "sampling_interval": 4000,
-                "queue_size": 1,
-                "discard_oldest": true,
-                "deadbandval": 90,
-                "deadbandtype": 1
-            },
-            "monitored_item_infos2":{
-                "sampling_interval": 1000,
-                "priority": 0,
-                "queue_size": 1,
-                "discard_oldest": true,
-                "deadbandval": 20,
-                "deadbandtype": 2
-            }
-        },
-        "monitored_item_info_ids": "2,1"
+        ]
     }
-}   
+    ]
+}

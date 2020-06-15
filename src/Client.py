@@ -88,7 +88,7 @@ class Client_opc():
         for i in range(len(AggrVar)):
            AggrVar[i].set_value(values[i])
 
-    
+    '''
     #This method is called when we want only to write Data
     def writeData(self,node_ids,new_values):
         node = []
@@ -106,7 +106,7 @@ class Client_opc():
         #Set new values in the sample server
         for i in range(len(node)):
            node[i].set_value(new_vals[i]) #Node.py stack function
-
+    '''
 
     '''This method is our stack method revisitation to set our parameter values'''
     #This method is used in the "subscribe" method to create the filter for making the monitored item request

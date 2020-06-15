@@ -5,7 +5,8 @@ Raiti Mario O55000434
 Nardo Gabriele Salvatore O55000430
 """
 import Client
-import threading 
+import threading
+import time
 
 class ThreadClient(threading.Thread):
 
@@ -32,24 +33,23 @@ class ThreadClient(threading.Thread):
             client.secure_channel_and_session_activation()
 
             #Check the operation that we have to do from the configuration file
-            #Read operation -> we pass node ids
-            if (self.sample_server_conf['service_req'] == "read"):
-                client.readData(self.sample_server_conf['node_ids'])
-                
+            #Polling operation -> we pass node ids,
             #Subscribe operation -> we pass node_ids, subscriptions infos and monitored items configuration infos
-            if (self.sample_server_conf['service_req'] == "subscribe"):
-                sub, handle = client.subscribe(self.sample_server_conf['node_ids'],self.sample_server_conf['sub_infos'], self.sample_server_conf['sub_info_ids'], self.sample_server_conf['monitored_item_infos'], self.sample_server_conf['monitored_item_info_ids'])
-
+            for i in range(len(self.sample_server_conf["monitoring_info"])):  
+                if((self.sample_server_conf["monitoring_info"][i]["monitoringMode"]) == "monitored_item"):
+                        sub, handle = client.subscribe() 
+            
+            """
             #Write operation -> we pass node_ids and new values to write
             if (self.sample_server_conf['service_req'] == "write"):
                 client.writeData(self.sample_server_conf['node_ids'],self.sample_server_conf['write_info']['new_value'])
-                
+            """    
                 
             while True: 
                 if self.stopped():  #Check if thread is stopped                
                     print("Client Stopping...")
                     #if the request is subscribe, then we want to delete monitored items and delete subscribtions
-                    if (self.sample_server_conf['service_req'] == "subscribe"):
+                    if ((self.sample_server_conf["monitoring_info"][i]["monitoringMode"]) == "monitored_item"):
                         client.delete_monit_items(sub, handle)
                         client.delete_sub(sub)
                     client.disconnect() #close session, secure channel and disconnect

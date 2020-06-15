@@ -24,9 +24,9 @@ if __name__ == "__main__":
     config_json = json.load(config_file)
 
     aggr_servers = [] #each element will contain sample servers informaion list
-    for key in config_json:
-        aggr_servers.append(config_json[key])
-
+    for i in range(len(config_json["servers"])):
+        aggr_servers.append(config_json["servers"][i])
+    
     # Server Setup endpoint and security policy settings
     server = Server()
     server.name = "AggregationServer"
@@ -59,9 +59,9 @@ if __name__ == "__main__":
     # each element of the node_ids list contains the node ids of the nodes that we want to monitor on a single sample server
     #This list is useful when populating object tree
     node_ids = [[] for i in range(len(aggr_servers))]
-    for i, Server in enumerate(aggr_servers):
-        for node_id in Server['node_ids'].split(","):
-            node_ids[i].append(node_id)
+    for i in range(len(aggr_servers)):
+        for j in range(len(aggr_servers[i]["monitoring_info"])):
+            node_ids[i].append(aggr_servers[i]["monitoring_info"][j]["nodeTomonitor"])
 
     #Populating the object tree with our custom object type and variables that will contain the values that we want to monitor. 
     #Added also a property for each variable, that will contain the node id of the node in the sample server that we want to obtain values ->
@@ -69,26 +69,26 @@ if __name__ == "__main__":
     aggregatedServers_objects = [] #aggregated servers objects list
     for i in range(len(aggr_servers)):
         obj = aggregator.add_object(idx,"AggregatedServer_"+str(i+1), mycustomobj_type.nodeid)
-        for j in range(len(aggr_servers[i]['node_ids'].split(","))):
+        obj.add_property(idx, "Remote URL Server", aggr_servers[i]["endpoint"])
+        for j in range(len(node_ids[i])):
             var = obj.add_variable(idx,"AggregatedVariable_"+str(j+1), 0)
-            prop = var.add_property(idx, "IdVarInSampleServer", node_ids[i][j])
+            var.add_property(idx, "Remote NodeId", node_ids[i][j])
             var.set_writable()
             
         aggregatedServers_objects.append(obj)
-
 
     # starting server
     server.start()
     print("Available Endpoint for connection : opc.tcp://127.0.0.1:8000/AggregationServer/")
     print("Press Ctrl + C to stop the server...")
     
-    
+
     # Creazione dei threads per gli n client
     clients_threads = []
     for i in  range(len(aggr_servers)):
         #We pass to the ThreadClient the conf of a sample server, cert path and AggregatedServer object that cointains the variable to monitor in that sample server
         clients_threads.append(ThreadClient(aggr_servers[i],certificate_path, aggregatedServers_objects[i]))
-
+    
     for i in range(len(clients_threads)):
         print("-----------------------------------")
         print(f"Thread {i} started..")
@@ -101,7 +101,6 @@ if __name__ == "__main__":
         for i in range(len(clients_threads)):
             clients_threads[i].stop()
             clients_threads[i].join()
-
     finally:
         print("-----------------------------------")
         print("Server Stopping...")
