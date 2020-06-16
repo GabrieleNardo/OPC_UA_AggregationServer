@@ -23,20 +23,19 @@
         ],
         "monitoring_info":[
             {
+                "monitoringMode": "polling", 
+                "nodeTomonitor": "ns=2;i=11206",
+                "refreshing_interval": 2
+            },
+            {
+                "monitoringMode": "monitored_item",
                 "subIndex": 0,
-                "nodeTomonitor": "ns=2;i=11212",
-                "monitoringMode": "monitored_item", 
+                "nodeTomonitor": "ns=2;i=11212", 
                 "sampling_interval": 2000,
                 "queue_size": 1,
                 "discard_oldest": true,
                 "deadbandval": 40,
                 "deadbandtype": 2
-            },
-            {
-                "subIndex": 1,
-                "nodeTomonitor": "ns=2;i=11206",
-                "monitoringMode": "polling", 
-                "sampling_interval": 2000
             }
         ]
     }

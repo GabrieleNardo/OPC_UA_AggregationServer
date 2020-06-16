@@ -7,9 +7,7 @@ Raiti Mario O55000434
 
 from opcua import ua , Client
 from collections import Iterable
-import time 
-
-
+import threading
 
 #This class is used to handle the datachange notifications
 #OPC UA Python Stack specify to use  explicitly "datachange_notification" method and "event_notification" method to handle the notifications
@@ -20,20 +18,18 @@ class SubHandler(object):
         self.AggrObject = AggrObject
 
     def datachange_notification(self, node, val, data):
-        print("Python: New data change event", node, val)
+        threadLock = threading.Lock()
+
+        print("Subscription Service: New data change event", node, val)
         #Getting node id string to compare with properties of aggregated variables
         node_str = "ns="+str(node.nodeid.NamespaceIndex)+";i="+str(node.nodeid.Identifier)
         AggrVar = self.AggrObject.get_variables()
         for i in range(len(AggrVar)):
             value = AggrVar[i].get_properties()
             if(value[0].get_data_value().Value.Value == node_str):
+                threadLock.acquire()
                 AggrVar[i].set_value(data.monitored_item.Value)
-
-    def event_notification(self, event):
-        print("Python: New event", event)
-
-
-
+                threadLock.release()
 
 
 class Client_opc():
@@ -74,20 +70,22 @@ class Client_opc():
 
 
     #This method is called when we want only to read Data
-    def readData(self,node_ids):
-        node = []
-        values = []
-        #Get nodes
-        for node_id in node_ids.split(","):
-            node.append(self.client.get_node(node_id)) #Client.py stack function
+    def readData(self,node_id):
+        #Get node
+        node = self.client.get_node(node_id) #Client.py stack function
         #Get values
-        for i in range(len(node)):
-            values.append(node[i].get_data_value()) #Node.py stack function
+        value = node.get_data_value() #Node.py stack function
+        print(f"Polling Service readed value : {value} ")
         #Set readed values in the local variables
+        node_str = "ns="+str(node.nodeid.NamespaceIndex)+";i="+str(node.nodeid.Identifier)
         AggrVar = self.AggrObject.get_variables()
+        threadLock = threading.Lock()
         for i in range(len(AggrVar)):
-           AggrVar[i].set_value(values[i])
-
+            prop = AggrVar[i].get_properties()
+            if(prop[0].get_data_value().Value.Value == node_str):
+                threadLock.acquire()
+                AggrVar[i].set_value(value)
+                threadLock.release()
     '''
     #This method is called when we want only to write Data
     def writeData(self,node_ids,new_values):
@@ -120,10 +118,10 @@ class Client_opc():
 
     '''This method is our stack method revisitation to set our parameter values'''
     #This method is called in the "subscribe" method for creating the monitored items for the nodes passed. 
-    def create_monitored_item(self, subscription, sub_nodes , sampling_interval, filter=None, queuesize = 0, discard_oldest = True, attr=ua.AttributeIds.Value):
+    def create_monitored_item(self, subscription, nodes , sampling_interval, filter=None, queuesize = 0, discard_oldest = True, attr=ua.AttributeIds.Value):
         is_list = True
-        if isinstance(sub_nodes, Iterable):
-            nodes = list(sub_nodes)
+        if isinstance(nodes, Iterable):
+            nodes = list(nodes)
         else:
             nodes = [nodes]
             is_list = False
@@ -163,44 +161,33 @@ class Client_opc():
 
 
     #This method is called when we want only to subscribe to Data. It takes as input sub infos and mon_item infos from conf file
-    def subscribe(self,node_ids, sub_infos, sub_info_ids, monitored_item_infos, monitored_item_info_ids):
+    def subscribe(self, monitored_nodes, sub_infos):
             #Create the handlers
             handler = []
             for i in range(len(sub_infos)):
                 handler.append(SubHandler(self.AggrObject))
             #Creating a subscription for ech 'sub_infos' element in the config file (different types of subscriptions -> different parameters)
             sub = []
+            sub_index_list = []
+            for i in range(len(monitored_nodes)):
+                sub_index_list.append(monitored_nodes[i]["subIndex"])
             for i in range(len(sub_infos)):
-                #Set sub parameters
-                params = ua.CreateSubscriptionParameters()
-                params.RequestedPublishingInterval = sub_infos['sub_info'+str(i+1)]['requested_publish_interval']
-                params.RequestedLifetimeCount = sub_infos['sub_info'+str(i+1)]['requested_lifetime_count']
-                params.RequestedMaxKeepAliveCount = sub_infos['sub_info'+str(i+1)]['requested_max_keepalive_timer']
-                params.MaxNotificationsPerPublish = sub_infos['sub_info'+str(i+1)]['max_notif_per_publish']
-                params.PublishingEnabled = sub_infos['sub_info'+str(i+1)]['publishing_enabled']
-                params.Priority = sub_infos['sub_info'+str(i+1)]['priority']
-                #Create the subscription
-                sub.append(self.client.create_subscription(params, handler[i]))
-            #node is the nodelist that we want to get the updated values
-            node = [] 
-            for node_id in node_ids.split(","):
-                node.append(self.client.get_node(node_id))
-            #handle will contains mon_item_ids
+                if(i in sub_index_list):
+                    #Set sub parameters
+                    params = ua.CreateSubscriptionParameters()
+                    params.RequestedPublishingInterval = sub_infos[i]['requested_publish_interval']
+                    params.RequestedLifetimeCount = sub_infos[i]['requested_lifetime_count']
+                    params.RequestedMaxKeepAliveCount = sub_infos[i]['requested_max_keepalive_timer']
+                    params.MaxNotificationsPerPublish = sub_infos[i]['max_notif_per_publish']
+                    params.PublishingEnabled = sub_infos[i]['publishing_enabled']
+                    params.Priority = sub_infos[i]['priority']
+                    #Create the subscription
+                    sub.append(self.client.create_subscription(params, handler[i]))
+            #handle will contains mon_item_ids 
             handle = []
-            #sub_info_ids is used to associate each node to each type of subscription configuration (positional way)          
-            sub_info_ids = sub_info_ids.split(",")
-            #monitored_item_info_ids is used to associate each node to each type of monitored_item configuration (positional way)
-            monitored_item_info_ids = monitored_item_info_ids.split(",")
-            #split_nodes will contains all nodes splitted for subscriptions configuration and monitored item configuration for each subscription conf
-            split_nodes = [[[] for j in range(len(monitored_item_infos))] for i in range(len(sub_infos))]
-            for i in range(len(sub_infos)):         #iterate on sub_infos
-                for j in range(len(monitored_item_infos)): 
-                    filter = self.set_datachange_filter(monitored_item_infos['monitored_item_infos'+str(j+1)]['deadbandval'], monitored_item_infos['monitored_item_infos'+str(j+1)]['deadbandtype']) #Set filter from config parameters setted in the config file
-                    for k in range(len(node)):
-                        if ((int(sub_info_ids[k]) == (i+1)) and (int(monitored_item_info_ids[k]) == (j+1))):
-                            split_nodes[i][j].append(node[k])
-                    if (len(split_nodes[i][j]) > 0):  #for each subscription config and monitored item config, if len of split_nodes is > 0 (noedes are appended), create monitored items for that nodes
-                        handle.append(self.create_monitored_item(sub[i], split_nodes[i][j],  monitored_item_infos['monitored_item_infos'+str(j+1)]['sampling_interval'] , filter, monitored_item_infos['monitored_item_infos'+str(j+1)]['queue_size'], monitored_item_infos['monitored_item_infos'+str(j+1)]['discard_oldest'])) #handle = list of monitored items ids
+            for i in range(len(monitored_nodes)):                     
+                filter = self.set_datachange_filter(monitored_nodes[i]['deadbandval'], monitored_nodes[i]['deadbandtype']) #Set filter from config parameters setted in the config file
+                handle.append(self.create_monitored_item(sub[monitored_nodes[i]['subIndex']], self.client.get_node(monitored_nodes[i]['nodeTomonitor']),  monitored_nodes[i]['sampling_interval'] , filter, monitored_nodes[i]['queue_size'], monitored_nodes[i]['discard_oldest'])) #handle = list of monitored items ids
             #handler.datachange_notification is called when a value of the monitored nodes has changed
             return sub, handle
     
@@ -208,15 +195,13 @@ class Client_opc():
     #This method take as input the subscription list and handle list of monitored items that we want to delete
     def delete_monit_items(self, sub, handle):
        for i in range(len(sub)):
-            for j in range(len(handle)):
-                for mid in handle[j]:
-                    try:
-                        #stack function called on the subscription
-                        sub[i].unsubscribe(mid) #unsubscribe to data_change/events of the selected monitored items (handle -> list of monitored items ids)
-                    except ua.uaerrors._auto.BadMonitoredItemIdInvalid: 
-                        #This except is added because we call the unsubscribe stack method (delete monitored_item) for every subscription, but the monitored item is present only in one of them
-                        #So, in the other subscriptions, the BadMonitoredItemInvalid is raised, but we want to ignore this error
-                        pass
+            for mid in handle:
+                try:
+                    #stack function called on the subscription
+                    sub[i].unsubscribe(mid) #unsubscribe to data_change/events of the selected monitored items (handle -> list of monitored items ids)
+                except ua.uaerrors._auto.BadMonitoredItemIdInvalid: 
+                    #This except is added because we call the unsubscribe stack method (delete monitored_item) for every subscription, but the monitored item is present only in one of them                        #So, in the other subscriptions, the BadMonitoredItemInvalid is raised, but we want to ignore this error
+                    pass
 
 
 

@@ -7,6 +7,7 @@ Nardo Gabriele Salvatore O55000430
 import Client
 import threading
 import time
+from Thread_polling import PollingService
 
 class ThreadClient(threading.Thread):
 
@@ -32,26 +33,41 @@ class ThreadClient(threading.Thread):
             #creating secure channel, creating session, activate session
             client.secure_channel_and_session_activation()
 
+
             #Check the operation that we have to do from the configuration file
             #Polling operation -> we pass node ids,
             #Subscribe operation -> we pass node_ids, subscriptions infos and monitored items configuration infos
+            monitored_nodes = []
+            polling_nodes = []
             for i in range(len(self.sample_server_conf["monitoring_info"])):  
                 if((self.sample_server_conf["monitoring_info"][i]["monitoringMode"]) == "monitored_item"):
-                        sub, handle = client.subscribe() 
+                    monitored_nodes.append(self.sample_server_conf["monitoring_info"][i])
+                if((self.sample_server_conf["monitoring_info"][i]["monitoringMode"]) == "polling"):
+                    polling_nodes.append(self.sample_server_conf["monitoring_info"][i])
             
-            """
-            #Write operation -> we pass node_ids and new values to write
-            if (self.sample_server_conf['service_req'] == "write"):
-                client.writeData(self.sample_server_conf['node_ids'],self.sample_server_conf['write_info']['new_value'])
-            """    
+            if(len(monitored_nodes) > 0):
+                sub, handle = client.subscribe(monitored_nodes,self.sample_server_conf["sub_infos"])
                 
+ 
+            if(len(polling_nodes) > 0):
+                polling_threads = []
+                for i in range(len(polling_nodes)):
+                    polling_threads.append(PollingService(polling_nodes[i]["nodeTomonitor"],polling_nodes[i]["refreshing_interval"],client))
+                    polling_threads[i].start()
+            
+            
             while True: 
                 if self.stopped():  #Check if thread is stopped                
-                    print("Client Stopping...")
                     #if the request is subscribe, then we want to delete monitored items and delete subscribtions
-                    if ((self.sample_server_conf["monitoring_info"][i]["monitoringMode"]) == "monitored_item"):
-                        client.delete_monit_items(sub, handle)
+                    if (len(monitored_nodes) > 0):
+                        #client.delete_monit_items(sub, handle)
                         client.delete_sub(sub)
+                    if(len(polling_nodes) > 0):
+	                    for i in range(len(polling_nodes)):
+		                    polling_threads[i].stop()
+		                    polling_threads[i].join()
+                    print("-----------------------------------")
+                    print("Client Stopping...")
                     client.disconnect() #close session, secure channel and disconnect
                     return
             

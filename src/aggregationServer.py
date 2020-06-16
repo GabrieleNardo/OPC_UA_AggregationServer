@@ -33,6 +33,10 @@ if __name__ == "__main__":
     server.set_endpoint("opc.tcp://127.0.0.1:8000/AggregationServer/")
 
     server.set_security_policy([ua.SecurityPolicyType.NoSecurity,
+                            ua.SecurityPolicyType.Basic128Rsa15_Sign,
+                            ua.SecurityPolicyType.Basic128Rsa15_SignAndEncrypt,
+                            ua.SecurityPolicyType.Basic256_Sign,
+                            ua.SecurityPolicyType.Basic256_SignAndEncrypt,
                             ua.SecurityPolicyType.Basic256Sha256_SignAndEncrypt,
                             ua.SecurityPolicyType.Basic256Sha256_Sign])
 
