@@ -1,6 +1,54 @@
 {
    "servers" : [{
-        "endpoint":"opc.tcp://pc-mario:51210/UA/SampleServer",
+        "endpoint":"opc.tcp://DESKTOP-V6N8M9J:51210/UA/SampleServer",
+        "security_policy":"Basic128Rsa15",
+        "security_mode":"SignAndEncrypt",
+        "sub_infos": [
+            {
+                "requested_publish_interval": 2000,
+                "requested_lifetime_count": 30000,
+                "requested_max_keepalive_timer": 5000,
+                "max_notif_per_publish": 2147483647,
+                "publishing_enabled": true,
+                "priority": 0
+            },
+            {
+                "requested_publish_interval": 3000,
+                "requested_lifetime_count": 30000,
+                "requested_max_keepalive_timer": 5000,
+                "max_notif_per_publish": 2147483647,
+                "publishing_enabled": true,
+                "priority": 0
+            }
+        ],
+        "monitoring_info":[
+            
+            {
+                "client_handle": 1,
+                "monitoringMode": "monitored_item",
+                "subIndex": 0,
+                "nodeTomonitor": "ns=2;i=11212", 
+                "sampling_interval": 2000,
+                "queue_size": 1,
+                "discard_oldest": true,
+                "deadbandval": 20,
+                "deadbandtype": 2
+            },
+            {
+                "client_handle": 2,
+                "monitoringMode": "monitored_item",
+                "subIndex": 1,
+                "nodeTomonitor": "ns=2;i=11206", 
+                "sampling_interval": 2000,
+                "queue_size": 1,
+                "discard_oldest": true,
+                "deadbandval": 40,
+                "deadbandtype": 2
+            }
+        ]
+    },
+    {
+        "endpoint":"opc.tcp://DESKTOP-V6N8M9J:51210/UA/SampleServer",
         "security_policy":"Basic128Rsa15",
         "security_mode":"SignAndEncrypt",
         "sub_infos": [
@@ -23,19 +71,31 @@
         ],
         "monitoring_info":[
             {
-                "monitoringMode": "polling", 
-                "nodeTomonitor": "ns=2;i=11206",
-                "refreshing_interval": 2
+                "monitoringMode": "polling",
+                "nodeTomonitor": "ns=2;i=11194", 
+                "refreshing_interval": 4
             },
             {
+                "client_handle": 1,
                 "monitoringMode": "monitored_item",
                 "subIndex": 0,
-                "nodeTomonitor": "ns=2;i=11212", 
+                "nodeTomonitor": "ns=2;i=11224", 
                 "sampling_interval": 2000,
                 "queue_size": 1,
                 "discard_oldest": true,
                 "deadbandval": 40,
-                "deadbandtype": 2
+                "deadbandtype": 1
+            },
+            {
+                "client_handle": 2,
+                "monitoringMode": "monitored_item",
+                "subIndex": 1,
+                "nodeTomonitor": "ns=2;i=11200", 
+                "sampling_interval": 2000,
+                "queue_size": 1,
+                "discard_oldest": true,
+                "deadbandval": 10,
+                "deadbandtype": 1
             }
         ]
     }

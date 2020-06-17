@@ -6,40 +6,44 @@ Raiti Mario O55000434
 """
 
 from opcua import ua , Client
-from collections import Iterable
+from collections.abc import Iterable
 import threading
+
+
+
 
 #This class is used to handle the datachange notifications
 #OPC UA Python Stack specify to use  explicitly "datachange_notification" method and "event_notification" method to handle the notifications
 class SubHandler(object):
 
     #We pass Aggr Object to updated our variables whan a datachange_notification is called
-    def __init__(self, AggrObject):
+    def __init__(self, AggrObject, handle_dict):
         self.AggrObject = AggrObject
+        self.handle_dict = handle_dict
 
     def datachange_notification(self, node, val, data):
         threadLock = threading.Lock()
-
-        print("Subscription Service: New data change event", node, val)
+ 
+        print("Subscription Service: New data change event:", data.monitored_item.ClientHandle, val, node)
         #Getting node id string to compare with properties of aggregated variables
-        node_str = "ns="+str(node.nodeid.NamespaceIndex)+";i="+str(node.nodeid.Identifier)
         AggrVar = self.AggrObject.get_variables()
-        for i in range(len(AggrVar)):
-            value = AggrVar[i].get_properties()
-            if(value[0].get_data_value().Value.Value == node_str):
-                threadLock.acquire()
-                AggrVar[i].set_value(data.monitored_item.Value)
-                threadLock.release()
-
+        for var in AggrVar: 
+            threadLock = threading.Lock()
+            for key in self.handle_dict:
+                 if(self.handle_dict[key] == data.monitored_item.ClientHandle and str(var.nodeid) == key):
+                    threadLock.acquire()
+                    var.set_value(data.monitored_item.Value)
+                    threadLock.release()
 
 class Client_opc():
 
-    def __init__(self, cert_path, server_path, policy, mode, AggrObject):
+    def __init__(self, cert_path, server_path, policy, mode, AggrObject, handle_dict):
         self.cert_path = cert_path #certificates path
         self.server_path = server_path
         self.policy = policy
         self.mode = mode
         self.AggrObject = AggrObject
+        self.handle_dict = handle_dict
 
 
     #istantiating Client calling "Client" constructor into stack opcua, set name and calling set_security_string method in the stack
@@ -70,22 +74,22 @@ class Client_opc():
 
 
     #This method is called when we want only to read Data
-    def readData(self,node_id):
+    def readData(self,node_id, polling_dict):
         #Get node
         node = self.client.get_node(node_id) #Client.py stack function
         #Get values
         value = node.get_data_value() #Node.py stack function
         print(f"Polling Service readed value : {value} ")
         #Set readed values in the local variables
-        node_str = "ns="+str(node.nodeid.NamespaceIndex)+";i="+str(node.nodeid.Identifier)
         AggrVar = self.AggrObject.get_variables()
-        threadLock = threading.Lock()
-        for i in range(len(AggrVar)):
-            prop = AggrVar[i].get_properties()
-            if(prop[0].get_data_value().Value.Value == node_str):
-                threadLock.acquire()
-                AggrVar[i].set_value(value)
-                threadLock.release()
+        for var in AggrVar: 
+            threadLock = threading.Lock()
+            for key in polling_dict:
+                remote_node = self.client.get_node(polling_dict[key])
+                if(remote_node == node and str(var.nodeid) == key):
+                    threadLock.acquire()
+                    var.set_value(value)
+                    threadLock.release()
     '''
     #This method is called when we want only to write Data
     def writeData(self,node_ids,new_values):
@@ -118,7 +122,7 @@ class Client_opc():
 
     '''This method is our stack method revisitation to set our parameter values'''
     #This method is called in the "subscribe" method for creating the monitored items for the nodes passed. 
-    def create_monitored_item(self, subscription, nodes , sampling_interval, filter=None, queuesize = 0, discard_oldest = True, attr=ua.AttributeIds.Value):
+    def create_monitored_item(self, subscription, nodes , sampling_interval, client_handle, filter=None, queuesize = 0, discard_oldest = True, attr=ua.AttributeIds.Value):
         is_list = True
         if isinstance(nodes, Iterable):
             nodes = list(nodes)
@@ -127,7 +131,7 @@ class Client_opc():
             is_list = False
         mirs = []
         for node in nodes:
-            mir = self.make_monitored_item_request(subscription, node, attr, sampling_interval, filter, queuesize, discard_oldest) #making monitored item request
+            mir = self.make_monitored_item_request(subscription, node, attr, sampling_interval, client_handle, filter, queuesize, discard_oldest) #making monitored item request
             mirs.append(mir)
 
         mids = subscription.create_monitored_items(mirs)
@@ -140,13 +144,13 @@ class Client_opc():
 
     '''This method is our stack method revisitation to set our parameter values'''
     #This method sets our params obtained from the conf file and make the monitored item request
-    def make_monitored_item_request(self, subscription, node, attr, sampling_interval, filter, queuesize, discard_oldest):
+    def make_monitored_item_request(self, subscription, node, attr, sampling_interval, client_handle, filter, queuesize, discard_oldest):
         rv = ua.ReadValueId()
         rv.NodeId = node.nodeid
         rv.AttributeId = attr
         mparams = ua.MonitoringParameters()
         with subscription._lock:
-            subscription._client_handle += 1
+            subscription._client_handle = client_handle
             mparams.ClientHandle = subscription._client_handle
         mparams.SamplingInterval = sampling_interval
         mparams.QueueSize = queuesize
@@ -165,7 +169,7 @@ class Client_opc():
             #Create the handlers
             handler = []
             for i in range(len(sub_infos)):
-                handler.append(SubHandler(self.AggrObject))
+                handler.append(SubHandler(self.AggrObject, self.handle_dict))
             #Creating a subscription for ech 'sub_infos' element in the config file (different types of subscriptions -> different parameters)
             sub = []
             sub_index_list = []
@@ -185,9 +189,12 @@ class Client_opc():
                     sub.append(self.client.create_subscription(params, handler[i]))
             #handle will contains mon_item_ids 
             handle = []
+            Aggr_key = []
+            for key in self.handle_dict:
+                Aggr_key.append(key)
             for i in range(len(monitored_nodes)):                     
                 filter = self.set_datachange_filter(monitored_nodes[i]['deadbandval'], monitored_nodes[i]['deadbandtype']) #Set filter from config parameters setted in the config file
-                handle.append(self.create_monitored_item(sub[monitored_nodes[i]['subIndex']], self.client.get_node(monitored_nodes[i]['nodeTomonitor']),  monitored_nodes[i]['sampling_interval'] , filter, monitored_nodes[i]['queue_size'], monitored_nodes[i]['discard_oldest'])) #handle = list of monitored items ids
+                handle.append(self.create_monitored_item(sub[monitored_nodes[i]['subIndex']], self.client.get_node(monitored_nodes[i]['nodeTomonitor']),  monitored_nodes[i]['sampling_interval'] ,self.handle_dict[Aggr_key[i]], filter, monitored_nodes[i]['queue_size'], monitored_nodes[i]['discard_oldest'])) #handle = list of monitored items ids
             #handler.datachange_notification is called when a value of the monitored nodes has changed
             return sub, handle
     

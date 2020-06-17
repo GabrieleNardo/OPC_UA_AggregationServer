@@ -12,12 +12,14 @@ from Thread_polling import PollingService
 class ThreadClient(threading.Thread):
 
     #for each client, sample server conf, contain all the info of a single sample server (e.g. config.json -> sample_server1)
-    def __init__(self , sample_server_conf , cert_path, AggrObject):
+    def __init__(self , sample_server_conf , cert_path, AggrObject, handle_dict, polling_dict):
         threading.Thread.__init__(self)      
         self._stopper = threading.Event()  #used ih thread stopping
         self.sample_server_conf = sample_server_conf
         self.cert_path = cert_path
         self.AggrObject = AggrObject
+        self.handle_dict = handle_dict
+        self.polling_dict = polling_dict
      
     def stop(self): 
         self._stopper.set() #set stopper when the client thread is stopped
@@ -27,7 +29,7 @@ class ThreadClient(threading.Thread):
     
     def run(self):
             #instantiate the Client. We pass cert path, the endpoint uri, security policy and security mode from sample server conf infos
-            client = Client.Client_opc(self.cert_path , self.sample_server_conf['endpoint'], self.sample_server_conf['security_policy'] , self.sample_server_conf['security_mode'], self.AggrObject)
+            client = Client.Client_opc(self.cert_path , self.sample_server_conf['endpoint'], self.sample_server_conf['security_policy'] , self.sample_server_conf['security_mode'], self.AggrObject, self.handle_dict)
             client.client_instantiate()
 
             #creating secure channel, creating session, activate session
@@ -52,7 +54,7 @@ class ThreadClient(threading.Thread):
             if(len(polling_nodes) > 0):
                 polling_threads = []
                 for i in range(len(polling_nodes)):
-                    polling_threads.append(PollingService(polling_nodes[i]["nodeTomonitor"],polling_nodes[i]["refreshing_interval"],client))
+                    polling_threads.append(PollingService(polling_nodes[i]["nodeTomonitor"],polling_nodes[i]["refreshing_interval"],client, self.polling_dict))
                     polling_threads[i].start()
             
             
@@ -60,7 +62,6 @@ class ThreadClient(threading.Thread):
                 if self.stopped():  #Check if thread is stopped                
                     #if the request is subscribe, then we want to delete monitored items and delete subscribtions
                     if (len(monitored_nodes) > 0):
-                        #client.delete_monit_items(sub, handle)
                         client.delete_sub(sub)
                     if(len(polling_nodes) > 0):
 	                    for i in range(len(polling_nodes)):
@@ -68,6 +69,7 @@ class ThreadClient(threading.Thread):
 		                    polling_threads[i].join()
                     print("-----------------------------------")
                     print("Client Stopping...")
+                    print("-----------------------------------")
                     client.disconnect() #close session, secure channel and disconnect
                     return
             
