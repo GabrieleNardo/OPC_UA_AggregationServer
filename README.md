@@ -32,6 +32,7 @@ Nella directory config è presente il file __config.json__ che contiene le infor
 
 **config.json:** questo file contiene un array sample, tale array avrà un elemento per ogni server che si vuole aggregare. Per ogni elemento sono previsti dei campi da configurare opportunamente per settare le informazioni relative al server e ai dati da tracciare, e per far si che l'applicativo esegua correttamente. Di seguito vengono descritti tali campi e per ognuno di essi sarà presentato in basso un esempio con dei valori ammissibili:
 
+- **serverName** : stringa che indica il nome server da aggragare che verrà visualizzato collegandosi all'aggreagtion server;
 - **endpoint**: deve contenere l'url del server che si vuole aggregare;
 -  **security_policy**: deve contenere una stringa che rappresenti l'algoritmo utilizzato per le operazioni di sicurezza, ove previste, in accordo al campo security mode. I valori ammissibili sono None se scegliamo come mode None, Basic256 se scegliamo come mode Sign o Basic256Sha256/Basic128Rsa15 se scegliamo come mode SignAndEncrypt;
 -  **security_mode** : deve contenere una stringa contente la modalità di sicurezza richiesta; i valori ammissibili sono: None, Sign e SignAndEncrypt; 
@@ -49,8 +50,10 @@ Il campo **monitoring_info** è un array, ogni su elemento andrà ad indicare un
 
 Nel caso in venga settato **monitoringMode** con __monitored_item__ seguiranno i seguenti campi :
 
+- **discplayName** : stringa che indica il nome della variabile da monitorare che verrà visualizzato collegandosi all'aggreagtion server;
+- **client_handle** : intero che verrà utilizzato per associare il monitored item alla variabile nell'aggregation server e permetterne l'aggiornamento. Tale valore deve essere diverso per ogni monitored item e preferibilmente progressivo;
 - **subIndex** : indice dell'array sub_info corrispondente alla sottoscrizione a cui si vuole associare il monitored item;
-- **nodeTomonotor** : stringa contenente il nodeid del nodo da monitorare,
+- **nodeTomonotor** : stringa contenente il nodeid del nodo da monitorare;
 - **sampling_interval**: intero che indica l'intervallo di tempo in millisecondi con la quale vengono prodotte le notifiche dai monitored item e poste nella coda dei messaggi;
 - **queue_size**: intero che indica la dimensione della coda dei monitored items;
 - **discard_oldest**: booleano che definisce la politica di gestione dei messaggi quando la coda del monitored item è piena;
@@ -67,6 +70,7 @@ A segurie un esempio di configurazione :
 ```[json]
 {
    "servers" : [{
+        "serverName" : "Sample Server 1",
         "endpoint":"opc.tcp://pc-mario:51210/UA/SampleServer",
         "security_policy":"Basic128Rsa15",
         "security_mode":"SignAndEncrypt",
@@ -90,11 +94,14 @@ A segurie un esempio di configurazione :
         ],
         "monitoring_info":[
             {
+                "displayName": "Int64Value",
                 "nodeTomonitor": "ns=2;i=11206",
                 "monitoringMode": "polling", 
                 "refreshing_interval": 2
             },
             {
+                "displayName" : "Uint64Value",
+                "client_handle" : 1
                 "subIndex": 0,
                 "nodeTomonitor": "ns=2;i=11212",
                 "monitoringMode": "monitored_item", 

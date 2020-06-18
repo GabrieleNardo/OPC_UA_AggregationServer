@@ -1,3 +1,9 @@
+"""
+File that contain Polling Thread implementation, used to call periodically readData function
+Created by:
+Raiti Mario O55000434
+Nardo Gabriele Salvatore O55000430
+"""
 import time
 import threading
 
@@ -17,6 +23,7 @@ class PollingService(threading.Thread):
         return self._stopper.isSet()
 
     def run(self):
+        #Implementation of periodic read service
         while not(self.stopped()):
             self.client.readData(self.nodeid, self.polling_dict)
             time.sleep(self.ref_int)

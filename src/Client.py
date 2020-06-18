@@ -7,13 +7,9 @@ Raiti Mario O55000434
 
 from opcua import ua , Client
 from collections.abc import Iterable
-import threading
-
-
-
 
 #This class is used to handle the datachange notifications
-#OPC UA Python Stack specify to use  explicitly "datachange_notification" method and "event_notification" method to handle the notifications
+#OPC UA Python Stack specify to use  explicitly "datachange_notification" method to handle the notifications
 class SubHandler(object):
 
     #We pass Aggr Object to updated our variables whan a datachange_notification is called
@@ -22,18 +18,13 @@ class SubHandler(object):
         self.handle_dict = handle_dict
 
     def datachange_notification(self, node, val, data):
-        threadLock = threading.Lock()
- 
         print("Subscription Service: New data change event:", data.monitored_item.ClientHandle, val, node)
-        #Getting node id string to compare with properties of aggregated variables
+        #Set the recived value in the local variables 
         AggrVar = self.AggrObject.get_variables()
         for var in AggrVar: 
-            threadLock = threading.Lock()
             for key in self.handle_dict:
                  if(self.handle_dict[key] == data.monitored_item.ClientHandle and str(var.nodeid) == key):
-                    threadLock.acquire()
                     var.set_value(data.monitored_item.Value)
-                    threadLock.release()
 
 class Client_opc():
 
@@ -83,32 +74,11 @@ class Client_opc():
         #Set readed values in the local variables
         AggrVar = self.AggrObject.get_variables()
         for var in AggrVar: 
-            threadLock = threading.Lock()
             for key in polling_dict:
                 remote_node = self.client.get_node(polling_dict[key])
                 if(remote_node == node and str(var.nodeid) == key):
-                    threadLock.acquire()
                     var.set_value(value)
-                    threadLock.release()
-    '''
-    #This method is called when we want only to write Data
-    def writeData(self,node_ids,new_values):
-        node = []
-        new_vals = []
-        #Get nodes
-        for node_id in node_ids.split(","):
-            node.append(self.client.get_node(node_id)) #Client.py stack function
-        #Get values from configuration file
-        for val in new_values.split(","):
-            new_vals.append(val)
-        #Set new values in local variables
-        AggrVar = self.AggrObject.get_variables()
-        for i in range(len(AggrVar)):
-           AggrVar[i].set_value(new_vals[i])
-        #Set new values in the sample server
-        for i in range(len(node)):
-           node[i].set_value(new_vals[i]) #Node.py stack function
-    '''
+                    
 
     '''This method is our stack method revisitation to set our parameter values'''
     #This method is used in the "subscribe" method to create the filter for making the monitored item request
@@ -209,7 +179,7 @@ class Client_opc():
                 except ua.uaerrors._auto.BadMonitoredItemIdInvalid: 
                     #This except is added because we call the unsubscribe stack method (delete monitored_item) for every subscription, but the monitored item is present only in one of them                        #So, in the other subscriptions, the BadMonitoredItemInvalid is raised, but we want to ignore this error
                     pass
-
+    
 
 
     #This method takes as input the subscriptions list and delete them

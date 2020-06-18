@@ -1,6 +1,7 @@
 {
    "servers" : [{
-        "endpoint":"opc.tcp://DESKTOP-V6N8M9J:51210/UA/SampleServer",
+        "serverName" : "Sample Server 1",
+        "endpoint":"opc.tcp://PC-Mario:51210/UA/SampleServer",
         "security_policy":"Basic128Rsa15",
         "security_mode":"SignAndEncrypt",
         "sub_infos": [
@@ -22,8 +23,8 @@
             }
         ],
         "monitoring_info":[
-            
             {
+                "displayName" : "Uint64Value",
                 "client_handle": 1,
                 "monitoringMode": "monitored_item",
                 "subIndex": 0,
@@ -35,6 +36,7 @@
                 "deadbandtype": 2
             },
             {
+                "displayName": "Int64Value",
                 "client_handle": 2,
                 "monitoringMode": "monitored_item",
                 "subIndex": 1,
@@ -48,7 +50,8 @@
         ]
     },
     {
-        "endpoint":"opc.tcp://DESKTOP-V6N8M9J:51210/UA/SampleServer",
+        "serverName" : "Sample Server 2",
+        "endpoint":"opc.tcp://PC-Mario:51210/UA/SampleServer",
         "security_policy":"Basic128Rsa15",
         "security_mode":"SignAndEncrypt",
         "sub_infos": [
@@ -71,11 +74,13 @@
         ],
         "monitoring_info":[
             {
+                "displayName" : "Int32Value",
                 "monitoringMode": "polling",
                 "nodeTomonitor": "ns=2;i=11194", 
                 "refreshing_interval": 4
             },
             {
+                "displayName" : "DoubleValue",
                 "client_handle": 1,
                 "monitoringMode": "monitored_item",
                 "subIndex": 0,
@@ -87,6 +92,7 @@
                 "deadbandtype": 1
             },
             {
+                "displayName" : "Uint32Value",
                 "client_handle": 2,
                 "monitoringMode": "monitored_item",
                 "subIndex": 1,

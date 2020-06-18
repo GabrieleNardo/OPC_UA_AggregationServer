@@ -53,7 +53,7 @@ if __name__ == "__main__":
     objects = server.get_objects_node()
 
     # populate our namespace with the aggreagated element and their variables
-    aggregator = objects.add_folder(idx, "Aggregator")
+    aggregator = objects.add_folder(idx, "Aggregated Servers")
  
     # definition of our custom object type -> AggregatedServer
     types = server.get_node(ua.ObjectIds.BaseObjectType)
@@ -71,16 +71,15 @@ if __name__ == "__main__":
                 c_handles[i].append(aggr_servers[i]["monitoring_info"][j]["client_handle"])
 
     #Populating the object tree with our custom object type and variables that will contain the values that we want to monitor. 
-    #Added also a property for each variable, that will contain the node id of the node in the sample server that we want to obtain values ->
-    # -> relationship between our Aggregated server and sample servers
+    #Added also a property for each variable, that will contain the node id of the node in the sample server that we want to obtain values
     var_node_ids = [[] for i in range(len(aggr_servers))]
     polling_dict = [{} for i in range(len(aggr_servers))]
     aggregatedServers_objects = [] #aggregated servers objects list
     for i in range(len(aggr_servers)):
-        obj = aggregator.add_object(idx,"AggregatedServer_"+str(i+1), mycustomobj_type.nodeid)
+        obj = aggregator.add_object(idx,aggr_servers[i]["serverName"], mycustomobj_type.nodeid)
         obj.add_property(idx, "Remote URL Server", aggr_servers[i]["endpoint"])
         for j in range(len(node_ids[i])):
-            var = obj.add_variable(idx,"AggregatedVariable_"+str(j+1), 0)
+            var = obj.add_variable(idx,aggr_servers[i]["monitoring_info"][j]["displayName"], 0)
             if(aggr_servers[i]["monitoring_info"][j]["monitoringMode"] == "monitored_item"):
                 var_node_ids[i].append(var.nodeid)
             if(aggr_servers[i]["monitoring_info"][j]["monitoringMode"] == "polling"):
@@ -102,10 +101,10 @@ if __name__ == "__main__":
     print("Press Ctrl + C to stop the server...")
     
 
-    # Creazione dei threads per gli n client
+    # Creating a Client thread for each Server
     clients_threads = []
     for i in  range(len(aggr_servers)):
-        #We pass to the ThreadClient the conf of a sample server, cert path and AggregatedServer object that cointains the variable to monitor in that sample server
+        #We pass to the ThreadClient the conf of a sample server, cert path, AggregatedServer object that cointains the variable to monitor in that sample server and translation dictionary
         clients_threads.append(ThreadClient(aggr_servers[i],certificate_path, aggregatedServers_objects[i], handle_dict[i], polling_dict[i]))
     
     for i in range(len(clients_threads)):

@@ -28,17 +28,14 @@ class ThreadClient(threading.Thread):
         return self._stopper.isSet() #check if the thread is stopped
     
     def run(self):
-            #instantiate the Client. We pass cert path, the endpoint uri, security policy and security mode from sample server conf infos
+            #instantiate the Client. We pass cert path, the endpoint uri, security policy, security mode from sample server conf infos and client handle dictionary
             client = Client.Client_opc(self.cert_path , self.sample_server_conf['endpoint'], self.sample_server_conf['security_policy'] , self.sample_server_conf['security_mode'], self.AggrObject, self.handle_dict)
             client.client_instantiate()
 
             #creating secure channel, creating session, activate session
             client.secure_channel_and_session_activation()
 
-
-            #Check the operation that we have to do from the configuration file
-            #Polling operation -> we pass node ids,
-            #Subscribe operation -> we pass node_ids, subscriptions infos and monitored items configuration infos
+            # Separate the nodes according to the monitoring Mode
             monitored_nodes = []
             polling_nodes = []
             for i in range(len(self.sample_server_conf["monitoring_info"])):  
@@ -47,6 +44,9 @@ class ThreadClient(threading.Thread):
                 if((self.sample_server_conf["monitoring_info"][i]["monitoringMode"]) == "polling"):
                     polling_nodes.append(self.sample_server_conf["monitoring_info"][i])
             
+            #Check the operation that we have to do from the configuration file
+            #Polling operation -> we pass node ids, refresing interval
+            #Subscribe operation -> we pass node_ids, subscriptions infos and monitored items configuration infos
             if(len(monitored_nodes) > 0):
                 sub, handle = client.subscribe(monitored_nodes,self.sample_server_conf["sub_infos"])
                 
@@ -63,6 +63,7 @@ class ThreadClient(threading.Thread):
                     #if the request is subscribe, then we want to delete monitored items and delete subscribtions
                     if (len(monitored_nodes) > 0):
                         client.delete_sub(sub)
+                    #if the request is polling, we want to stop all the polling service threads
                     if(len(polling_nodes) > 0):
 	                    for i in range(len(polling_nodes)):
 		                    polling_threads[i].stop()
